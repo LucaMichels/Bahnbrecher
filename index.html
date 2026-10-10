@@ -663,6 +663,7 @@ html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}
         <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">+ Monatsbeiträge</span><span class="muted" style="font-size: 13px;">{{konto.beitragSub}}</span></div><span style="font-weight: 700; color: #93DAAA;">{{konto.beitragLabel}}</span></div>
         <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">+ Bezahlte Strafen</span><span class="muted" style="font-size: 13px;">{{konto.finesSub}}</span></div><span style="font-weight: 700; color: #93DAAA;">{{konto.finesLabel}}</span></div>
         <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">− Gaststätte</span><span class="muted" style="font-size: 13px;">{{konto.gastroSub}}</span></div><span style="font-weight: 700; color: #F6AFA5;">{{konto.gastroLabel}}</span></div>
+        <sc-if value="{{konto.kasseExp}}" hint-placeholder-val="{{false}}"><div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">− Ausgaben aus der Kegelkasse</span><span class="muted" style="font-size: 13px;">{{konto.kasseExpSub}}</span></div><span style="font-weight: 700; color: #F6AFA5;">{{konto.kasseExpLabel}}</span></div></sc-if>
         <div class="li" style="background: #2A2E37;"><span class="h" style="flex: 1; font-size: 17px;">= Kontostand</span><span class="h" style="font-size: 17px;">{{konto.balanceLabel}}</span></div>
       </div>
       <p class="muted" style="margin: 0; font-size: 13px;">Angenommen: Alle Beiträge sind eingegangen. Noch offene Strafen ({{totalOpen}}) sind nicht enthalten.</p>
@@ -1093,6 +1094,10 @@ html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}
         <button class="chip" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}};" aria-pressed="{{p.on}}" onClick="{{p.pick}}">{{p.name}}</button>
       </sc-for>
     </div>
+    <sc-if value="{{efKasse}}" hint-placeholder-val="{{false}}">
+    <p class="muted" style="margin: 0; font-size: 14px;">Die Kegelkasse übernimmt die Ausgabe komplett. Niemand muss etwas ausgleichen, der Betrag geht vom Vereinskonto ab.</p>
+    </sc-if>
+    <sc-if value="{{efSplit}}" hint-placeholder-val="{{true}}">
     <div style="display: flex; align-items: center; gap: 8px;">
       <p class="muted" style="margin: 0; font-size: 14px; flex: 1;">Aufteilen auf ({{splitCount}})</p>
       <button class="textbtn" style="padding: 0 6px;" onClick="{{splitAll}}">Alle</button>
@@ -1103,8 +1108,9 @@ html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}
         <button class="chip" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}};" aria-pressed="{{p.on}}" onClick="{{p.pick}}">{{p.name}}</button>
       </sc-for>
     </div>
+    </sc-if>
     <div style="background: #14161B; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px;">
-      <span class="muted" style="font-size: 13px;">{{splitLabel}}</span>
+      <sc-if value="{{efSplit}}" hint-placeholder-val="{{true}}"><span class="muted" style="font-size: 13px;">{{splitLabel}}</span></sc-if>
       <span style="font-weight: 700;">{{efPreview}}</span>
     </div>
     <button class="btn primary" disabled="{{efDisabled}}" onClick="{{saveExp}}">Speichern</button>
@@ -1143,6 +1149,7 @@ var MEMBERS = [
   { id: 'm11', name: 'Davin', full: 'Davin Steinhauer', role: '', roleShort: '' }
 ];
 var COLORS = ['#E8A33D', '#7FB7EC', '#86CC94', '#EE9A90', '#C3B1E6', '#6FCBC0', '#F2A0C4', '#F3C77A', '#A9D18E', '#F0B48A', '#9FC3E8'];
+var KASSE = 'kasse'; // Zahler-ID für Ausgaben, die die Kegelkasse übernimmt
 var GROUP = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11'];
 var CATS = ['Pünktlichkeit & Teilnahme', 'Auf der Bahn', 'Verhalten & Regeln', 'Eigene'];
 var RIGHTS = [
@@ -1511,7 +1518,7 @@ class Component extends DCLogic {
     var eur = x => x.cur === 'CZK' ? x.amount / RATE : x.amount;
     var bal = {}; GROUP.forEach(g => { bal[g] = 0; });
     var total = 0;
-    st.exp.forEach(x => { var v = eur(x); total += v; bal[x.payer] += v; var sh = v / x.among.length; x.among.forEach(q => { bal[q] -= sh; }); });
+    st.exp.forEach(x => { var v = eur(x); total += v; if (x.payer === KASSE) return; bal[x.payer] += v; var sh = v / x.among.length; x.among.forEach(q => { bal[q] -= sh; }); });
     var cr = GROUP.filter(g => bal[g] > 0.005).map(g => ({ id: g, v: bal[g] })).sort((x, y) => y.v - x.v);
     var db = GROUP.filter(g => bal[g] < -0.005).map(g => ({ id: g, v: -bal[g] })).sort((x, y) => y.v - x.v);
     var tr = [], i = 0, j = 0;
@@ -1523,7 +1530,7 @@ class Component extends DCLogic {
       if (cr[j].v < 0.005) j++;
     }
     var pairs = {};
-    st.exp.forEach(x => x.among.forEach(q => { if (q !== x.payer) pairs[q + '>' + x.payer] = 1; }));
+    st.exp.forEach(x => { if (x.payer !== KASSE) x.among.forEach(q => { if (q !== x.payer) pairs[q + '>' + x.payer] = 1; }); });
     var rawCount = Object.keys(pairs).length;
     var transfers = tr.map(x => {
       var key = x.from + '>' + x.to + ':' + x.v.toFixed(2); var done = !!st.settled[key];
@@ -1536,7 +1543,7 @@ class Component extends DCLogic {
       return Object.assign({}, byId[g], { nameLabel: g === st.me ? byId[g].name + ' (du)' : byId[g].name,
         label: (bv > 0.005 ? '+' : '') + fmt(bv), fg: bv > 0.005 ? '#93DAAA' : bv < -0.005 ? '#F6AFA5' : '#A3A8B2',
         sub: bv > 0.005 ? 'bekommt' : bv < -0.005 ? 'schuldet' : 'ausgeglichen' }); });
-    var expList = st.exp.slice().reverse().map(x => Object.assign({}, x, { payerName: byId[x.payer].name,
+    var expList = st.exp.slice().reverse().map(x => Object.assign({}, x, { payerName: x.payer === KASSE ? 'Kegelkasse' : byId[x.payer].name,
       orig: x.cur === 'CZK' ? fmtCZK(x.amount) : fmt(x.amount), conv: '= ' + fmt(eur(x)), isForeign: x.cur !== 'EUR',
       amongLabel: x.among.length === GROUP.length ? 'alle ' + GROUP.length : x.among.map(id => byId[id].name).join(', ') }));
     var inGroup = GROUP.indexOf(st.me) >= 0;
@@ -1548,7 +1555,8 @@ class Component extends DCLogic {
     var efA = parseAmt(ef.amount);
     var efEur = ef.cur === 'CZK' ? efA / RATE : efA;
     var nSplit = ef.among.length;
-    var efPreview = !(efA > 0) ? 'Betrag eingeben' : nSplit === 0 ? 'Mindestens eine Person auswählen'
+    var efKasse = ef.payer === KASSE;
+    var efPreview = !(efA > 0) ? 'Betrag eingeben' : efKasse ? (ef.cur === 'CZK' ? fmtCZK(efA) + ' = ' : '') + fmt(efEur) + ' aus der Kegelkasse' : nSplit === 0 ? 'Mindestens eine Person auswählen'
       : (ef.cur === 'CZK' ? fmtCZK(efA) + ' = ' + fmt(efEur) + ' · ' : '') + fmt(efEur / nSplit) + ' pro Person';
     var splitLabel = nSplit === GROUP.length ? 'Gleichmäßig auf alle ' + GROUP.length + ' aufgeteilt'
       : nSplit === 0 ? 'Noch niemand ausgewählt' : 'Gleichmäßig auf ' + nSplit + (nSplit === 1 ? ' Person' : ' Personen') + ' aufgeteilt';
@@ -1556,13 +1564,15 @@ class Component extends DCLogic {
       return { name: byId[g].name, on: on, bg: on ? '#2E3A4D' : 'transparent', fg: '#F1EFEA', bd: on ? '#7FB7EC' : 'rgba(255,255,255,.18)',
         pick: () => { var cur = this.state.expForm.among;
           set({ expForm: Object.assign({}, this.state.expForm, { among: cur.indexOf(g) >= 0 ? cur.filter(x => x !== g) : GROUP.filter(x => x === g || cur.indexOf(x) >= 0) }) }); } }; });
-    var efOk = !!(ef.desc.trim() && efA > 0 && nSplit > 0);
+    var efOk = !!(ef.desc.trim() && efA > 0 && (efKasse || nSplit > 0));
     var curChips = ['EUR', 'CZK'].map(cu => { var on = ef.cur === cu;
       return { label: cu, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA',
         pick: () => set({ expForm: Object.assign({}, this.state.expForm, { cur: cu }) }) }; });
     var payerChips = GROUP.map(g => { var on = ef.payer === g;
       return { name: byId[g].name, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA', bd: on ? '#E8A33D' : 'rgba(255,255,255,.18)',
         pick: () => set({ expForm: Object.assign({}, this.state.expForm, { payer: g }) }) }; });
+    payerChips.unshift({ name: 'Kegelkasse', on: efKasse, bg: efKasse ? '#86CC94' : 'transparent', fg: efKasse ? '#0F2416' : '#F1EFEA', bd: efKasse ? '#86CC94' : 'rgba(255,255,255,.18)',
+      pick: () => set({ expForm: Object.assign({}, this.state.expForm, { payer: KASSE }) }) });
 
     // Termin anlegen
     var ef2 = st.evForm;
@@ -1688,13 +1698,16 @@ class Component extends DCLogic {
     var finesSum = paidF.reduce((a, f) => a + f.amount, 0);
     var gastroIn = st.gastro.filter(g => dKey(g.date) >= an.key);
     var gastroSum = gastroIn.reduce((a, g) => a + parseAmt(g.amount), 0);
-    var balance = an.amount + beitragSum + finesSum - gastroSum;
+    var kasseExp = st.exp.filter(x => x.payer === KASSE && x.date && dKey(x.date) >= an.key);
+    var kasseExpSum = kasseExp.reduce((a, x) => a + eur(x), 0);
+    var balance = an.amount + beitragSum + finesSum - gastroSum - kasseExpSum;
     var canKasse = can('kasse');
     var konto = {
       balanceLabel: fmt(balance), balancePlain: balance.toFixed(2).replace('.', ','),
       anchorDate: an.date, anchorLabel: fmt(an.amount),
       beitragLabel: '+' + fmt(beitragSum), beitragSub: an.months + (an.months === 1 ? ' Monat' : ' Monate') + ' × ' + fmt(monthly),
       finesLabel: '+' + fmt(finesSum), finesSub: paidF.length + (paidF.length === 1 ? ' Strafe' : ' Strafen') + ' seit Abgleich',
+      kasseExp: kasseExp.length > 0, kasseExpLabel: fmt(-kasseExpSum), kasseExpSub: kasseExp.map(x => x.desc).join(', '),
       gastroLabel: fmt(-gastroSum), gastroSub: gastroIn.length + (gastroIn.length === 1 ? ' Kegelabend' : ' Kegelabende'),
       monthlyLabel: fmt(monthly),
       beitragInfo: 'Standard ' + fmt(std) + (nInd ? ' · ' + nInd + ' mit eigenem Betrag' : ' · alle zahlen den Standard')
@@ -1808,14 +1821,15 @@ class Component extends DCLogic {
       trCompare: rawCount + ' → ' + transfers.length + ' Zahlungen',
       canAddExp: can('expenses'), groupSize: GROUP.length,
       openAddExp: () => set({ expForm: { desc: '', amount: '', cur: 'EUR', payer: this.state.me, among: GROUP.slice() } }),
-      splitChips: splitChips, splitLabel: splitLabel, splitCount: nSplit + ' von ' + GROUP.length,
+      splitChips: splitChips, splitLabel: splitLabel, splitCount: nSplit + ' von ' + GROUP.length, efKasse: efKasse, efSplit: !efKasse,
       splitAll: () => set({ expForm: Object.assign({}, this.state.expForm, { among: GROUP.slice() }) }),
       splitNone: () => set({ expForm: Object.assign({}, this.state.expForm, { among: [] }) }),
       showAddExp: !!st.expForm, ef: ef, closeAddExp: () => set({ expForm: null }),
       efDesc: this.field('expForm', 'desc'), efAmount: this.field('expForm', 'amount'),
       curChips: curChips, payerChips: payerChips, efPreview: efPreview, efDisabled: !efOk,
       saveExp: () => { if (!efOk) return;
-        set({ exp: this.state.exp.concat([{ id: 'x' + Date.now(), desc: ef.desc.trim(), amount: efA, cur: ef.cur, payer: ef.payer, among: ef.among.slice() }]), expForm: null });
+        set({ exp: this.state.exp.concat([{ id: 'x' + Date.now(), desc: ef.desc.trim(), amount: efA, cur: ef.cur, payer: ef.payer, among: efKasse ? GROUP.slice() : ef.among.slice(),
+          date: pad(new Date().getDate()) + '.' + pad(new Date().getMonth() + 1) + '.' }]), expForm: null });
         this.showToast('Ausgabe gespeichert'); },
 
       o: o, openVerein: () => set({ overlay: 'verein' }), closeOverlay: () => set({ overlay: null }),
