@@ -1005,11 +1005,13 @@ html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}#app{
   <div style="flex: 1; display: flex; flex-direction: column; padding: 16px 24px 36px; gap: 20px;">
     <div style="flex: 1; background: #14161B; color: #F1EFEA; border-radius: 28px; padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between;">
       <p class="eyebrow">{{party.kind}}</p>
-      <p class="h" style="font-size: 30px; line-height: 1.15;">{{party.text}}</p>
+      <p class="h" style="font-size: {{party.size}}; line-height: 1.15;">{{party.text}}</p>
       <p class="muted" style="margin: 0; font-size: 13px;">Eigene Karten legt ihr später in der Verwaltung an.</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span style="flex: 1; font-weight: 700;">Ohne Alkohol</span>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-weight: 700; font-size: 15px;">Kegelbahn</span>
+      <button class="sw" style="background: {{party.bahnTrack}};" role="switch" aria-checked="{{party.bahn}}" aria-label="Kegelbahn" onClick="{{toggleBahn}}"><span class="knob" style="left: {{party.bahnKnob}};"></span></button>
+      <span style="flex: 1; text-align: right; font-weight: 700; font-size: 15px;">Ohne Alkohol</span>
       <button class="sw" style="background: {{party.track}};" role="switch" aria-checked="{{party.alcFree}}" aria-label="Ohne Alkohol" onClick="{{toggleAlc}}"><span class="knob" style="left: {{party.knob}};"></span></button>
     </div>
     <button class="btn" style="background: #14161B; color: #F1EFEA;" onClick="{{nextCard}}">Nächste Karte</button>
@@ -1154,39 +1156,79 @@ var CARDS = [
   { k: 'Abstimmung', t: 'Wer würde eher bei der Kegeltour den Bus verpassen? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer würde eher bei der Kegeltour den Bus verpassen? Auf drei zeigen alle. Wer die meisten Stimmen hat, erzählt die peinlichste Vereinsgeschichte.' },
   { k: 'Regel', t: '{a} stellt eine Regel auf, die bis zur übernächsten Karte gilt. Wer sie bricht, trinkt.', alt: '{a} stellt eine Regel auf, die bis zur übernächsten Karte gilt. Wer sie bricht, zahlt 0,20 € in die Kasse.' },
   { k: 'Aufgabe', t: '{a}, nenne in zehn Sekunden fünf Biersorten – oder trink drei Schlucke.', alt: '{a}, nenne in zehn Sekunden fünf Kegelbegriffe – oder sing einen Refrain deiner Wahl.' },
-  { k: 'Alle', t: 'Alle, die heute schon einen Pudel geworfen haben, trinken.', alt: 'Alle, die heute schon einen Pudel geworfen haben, stehen auf und verbeugen sich.' },
+  { bahn: true, k: 'Alle', t: 'Alle, die heute schon einen Pudel geworfen haben, trinken.', alt: 'Alle, die heute schon einen Pudel geworfen haben, stehen auf und verbeugen sich.' },
   { k: 'Ich hab noch nie', t: 'Ich hab noch nie an einem Abend mehr als 5 € Strafe gesammelt. Wer doch, trinkt.', alt: 'Ich hab noch nie an einem Abend mehr als 5 € Strafe gesammelt. Wer doch, steht kurz auf.' },
   { k: 'Tausch', t: '{a} und {b} tauschen bis zur nächsten Karte die Plätze und die Getränke.', alt: '{a} und {b} tauschen bis zur nächsten Karte die Plätze.' },
   { k: 'Abstimmung', t: 'Wer vergisst eher das Kegelshirt in der Wäsche? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer vergisst eher das Kegelshirt in der Wäsche? Auf drei zeigen alle. Wer die meisten Stimmen hat, macht fünf Liegestütze.' },
   { k: 'Duell', t: '{a} gegen {b}: Anstarren. Wer zuerst blinzelt oder lacht, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Anstarren. Wer zuerst blinzelt oder lacht, zahlt 0,20 € in die Kasse.' },
-  { k: 'Aufgabe', t: '{a} kommentiert den nächsten Wurf wie im Fernsehen. Wer dabei lacht, trinkt.', alt: '{a} kommentiert den nächsten Wurf wie im Fernsehen. Wer dabei lacht, macht fünf Kniebeugen.' },
-  { k: 'Alle', t: 'Alle, die heute schon eine Strafe kassiert haben, trinken einen Schluck.', alt: 'Alle, die heute schon eine Strafe kassiert haben, klatschen einmal laut in die Hände.' },
+  { bahn: true, k: 'Aufgabe', t: '{a} kommentiert den nächsten Wurf wie im Fernsehen. Wer dabei lacht, trinkt.', alt: '{a} kommentiert den nächsten Wurf wie im Fernsehen. Wer dabei lacht, macht fünf Kniebeugen.' },
+  { bahn: true, k: 'Alle', t: 'Alle, die heute schon eine Strafe kassiert haben, trinken einen Schluck.', alt: 'Alle, die heute schon eine Strafe kassiert haben, klatschen einmal laut in die Hände.' },
   { k: 'Ich hab noch nie', t: 'Ich hab noch nie mein Kegelshirt vergessen. Wer doch, trinkt.', alt: 'Ich hab noch nie mein Kegelshirt vergessen. Wer doch, steht kurz auf.' },
   { k: 'Regel', t: 'Bis zur übernächsten Karte wird nur mit links getrunken. Wer es vergisst, trinkt einen Extraschluck.', alt: 'Bis zur übernächsten Karte wird nur mit links getrunken. Wer es vergisst, zahlt 0,20 € in die Kasse.' },
-  { k: 'Stellvertreter', t: '{a} wirft den nächsten Wurf für {b}. Fällt kein Kegel, trinken beide.', alt: '{a} wirft den nächsten Wurf für {b}. Fällt kein Kegel, machen beide zehn Kniebeugen.' },
+  { bahn: true, k: 'Stellvertreter', t: '{a} wirft den nächsten Wurf für {b}. Fällt kein Kegel, trinken beide.', alt: '{a} wirft den nächsten Wurf für {b}. Fällt kein Kegel, machen beide zehn Kniebeugen.' },
   { k: 'Aufgabe', t: '{a}, nenne in zehn Sekunden fünf Strafen aus unserem Katalog – oder trink drei Schlucke.', alt: '{a}, nenne in zehn Sekunden fünf Strafen aus unserem Katalog – oder zahl 0,20 € in die Kasse.' },
-  { k: 'Abstimmung', t: 'Wer sammelt heute die meisten Strafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt schon mal vor.', alt: 'Wer sammelt heute die meisten Strafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, macht zehn Hampelmänner.' },
+  { bahn: true, k: 'Abstimmung', t: 'Wer sammelt heute die meisten Strafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt schon mal vor.', alt: 'Wer sammelt heute die meisten Strafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, macht zehn Hampelmänner.' },
   { k: 'Duell', t: '{a} gegen {b}: Daumencatchen. Wer verliert, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Daumencatchen. Wer verliert, singt die erste Zeile eines Schlagers.' },
   { k: 'Wahrheit', t: '{a}, wer im Verein wirft am schlechtesten? Ehrlich antworten – oder drei Schlucke trinken.', alt: '{a}, wer im Verein wirft am schlechtesten? Ehrlich antworten – oder zehn Kniebeugen machen.' },
   { k: 'Alle', t: 'Alle, die heute mit dem Rad oder zu Fuß gekommen sind, trinken.', alt: 'Alle, die heute mit dem Rad oder zu Fuß gekommen sind, bekommen einen Applaus.' },
   { k: 'Kategorie', t: '{a} nennt eine Kategorie, zum Beispiel Biersorten. Reihum nennt jeder einen Begriff. Wer hängt, trinkt.', alt: '{a} nennt eine Kategorie, zum Beispiel Automarken. Reihum nennt jeder einen Begriff. Wer hängt, zahlt 0,20 € in die Kasse.' },
   { k: 'Ich hab noch nie', t: 'Ich hab noch nie eine Kugel aus der Bahn geworfen. Wer doch, trinkt.', alt: 'Ich hab noch nie eine Kugel aus der Bahn geworfen. Wer doch, hebt die Hand.' },
   { k: 'Regel', t: '{a} ist bis zur übernächsten Karte Fragenmeister. Wer eine Frage beantwortet, trinkt.', alt: '{a} ist bis zur übernächsten Karte Fragenmeister. Wer eine Frage beantwortet, zahlt 0,20 € in die Kasse.' },
-  { k: 'Aufgabe', t: '{a} wirft den nächsten Wurf mit der schwachen Hand. Fällt kein Kegel, trinkt {b}.', alt: '{a} wirft den nächsten Wurf mit der schwachen Hand. Fällt kein Kegel, macht {b} zehn Kniebeugen.' },
+  { bahn: true, k: 'Aufgabe', t: '{a} wirft den nächsten Wurf mit der schwachen Hand. Fällt kein Kegel, trinkt {b}.', alt: '{a} wirft den nächsten Wurf mit der schwachen Hand. Fällt kein Kegel, macht {b} zehn Kniebeugen.' },
   { k: 'Abstimmung', t: 'Wer würde eher auf der Kegeltour im falschen Hotel einchecken? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer würde eher auf der Kegeltour im falschen Hotel einchecken? Auf drei zeigen alle. Wer die meisten Stimmen hat, erzählt eine Reisepanne.' },
-  { k: 'Duell', t: '{a} gegen {b}: Wer beim nächsten Wurf weniger Kegel abräumt, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Wer beim nächsten Wurf weniger Kegel abräumt, zahlt 0,20 € in die Kasse.' },
-  { k: 'Alle', t: 'Alle ohne Kegelshirt trinken – und zahlen die Strafe natürlich trotzdem.', alt: 'Alle ohne Kegelshirt stehen auf – und zahlen die Strafe natürlich trotzdem.' },
+  { bahn: true, k: 'Duell', t: '{a} gegen {b}: Wer beim nächsten Wurf weniger Kegel abräumt, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Wer beim nächsten Wurf weniger Kegel abräumt, zahlt 0,20 € in die Kasse.' },
+  { bahn: true, k: 'Alle', t: 'Alle ohne Kegelshirt trinken – und zahlen die Strafe natürlich trotzdem.', alt: 'Alle ohne Kegelshirt stehen auf – und zahlen die Strafe natürlich trotzdem.' },
   { k: 'Wahrheit', t: '{a}, welche Strafe im Katalog ist die unfairste? Ein Satz Begründung – oder drei Schlucke.', alt: '{a}, welche Strafe im Katalog ist die unfairste? Ein Satz Begründung – oder zehn Kniebeugen.' },
   { k: 'Ich hab noch nie', t: 'Ich hab noch nie vergessen, mich abzumelden. Wer doch, trinkt.', alt: 'Ich hab noch nie vergessen, mich abzumelden. Wer doch, steht kurz auf.' },
   { k: 'Reim', t: '{a} sagt ein Wort, reihum wird darauf gereimt. Wer keinen Reim findet, trinkt.', alt: '{a} sagt ein Wort, reihum wird darauf gereimt. Wer keinen Reim findet, zahlt 0,20 € in die Kasse.' },
   { k: 'Tausch', t: '{a} antwortet bis zur nächsten Karte für {b}. Wer selbst antwortet, trinkt.', alt: '{a} antwortet bis zur nächsten Karte für {b}. Wer selbst antwortet, zahlt 0,20 € in die Kasse.' },
   { k: 'Einschenker', t: 'Der Einschenker bestimmt zwei Leute, die einen Schluck trinken. Sich selbst darf er nicht wählen.', alt: 'Der Einschenker bestimmt zwei Leute, die zehn Kniebeugen machen. Sich selbst darf er nicht wählen.' },
   { k: 'Aufgabe', t: '{a} bringt einen Trinkspruch auf die Bahnbrecher aus. Danach trinken alle.', alt: '{a} bringt einen Trinkspruch auf die Bahnbrecher aus. Danach stoßen alle an.' },
-  { k: 'Abstimmung', t: 'Wer kegelt heute am besten? Auf drei zeigen alle. Wer die meisten Stimmen hat, verteilt drei Schlucke.', alt: 'Wer kegelt heute am besten? Auf drei zeigen alle. Wer die meisten Stimmen hat, bestimmt jemanden für zehn Kniebeugen.' },
+  { bahn: true, k: 'Abstimmung', t: 'Wer kegelt heute am besten? Auf drei zeigen alle. Wer die meisten Stimmen hat, verteilt drei Schlucke.', alt: 'Wer kegelt heute am besten? Auf drei zeigen alle. Wer die meisten Stimmen hat, bestimmt jemanden für zehn Kniebeugen.' },
   { k: 'Duell', t: '{a} gegen {b}: Armdrücken. Wer verliert, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Armdrücken. Wer verliert, macht zehn Kniebeugen.' },
   { k: 'Alle', t: 'Alle, die schon mal Alle Neune geworfen haben, dürfen einen Schluck verteilen.', alt: 'Alle, die schon mal Alle Neune geworfen haben, bekommen einen Applaus.' },
   { k: 'Pantomime', t: '{a} stellt einen Kegelbegriff pantomimisch dar. Wer ihn errät, verteilt zwei Schlucke.', alt: '{a} stellt einen Kegelbegriff pantomimisch dar. Wer ihn errät, bestimmt jemanden für zehn Kniebeugen.' },
-  { k: 'Ich hab noch nie', t: 'Ich hab noch nie meine Strafen pünktlich bezahlt. Wer doch, darf einen Schluck verteilen.', alt: 'Ich hab noch nie meine Strafen pünktlich bezahlt. Wer doch, bekommt einen Applaus.' }
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie meine Strafen pünktlich bezahlt. Wer doch, darf einen Schluck verteilen.', alt: 'Ich hab noch nie meine Strafen pünktlich bezahlt. Wer doch, bekommt einen Applaus.' },
+  { k: 'Wahrheit', t: '{a}, was war dein peinlichster Moment im Verein? Erzählen – oder drei Schlucke trinken.', alt: '{a}, was war dein peinlichster Moment im Verein? Erzählen – oder zehn Kniebeugen machen.' },
+  { k: 'Abstimmung', t: 'Wer würde bei einer Quizshow eher die Millionenfrage verzocken? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer würde bei einer Quizshow eher die Millionenfrage verzocken? Auf drei zeigen alle. Wer die meisten Stimmen hat, macht zehn Hampelmänner.' },
+  { k: 'Duell', t: '{a} gegen {b}: Wer zuerst lacht, verliert und trinkt zwei Schlucke. Grimassen sind erlaubt.', alt: '{a} gegen {b}: Wer zuerst lacht, verliert und macht zehn Kniebeugen. Grimassen sind erlaubt.' },
+  { k: 'Kategorie', t: '{a} startet mit Fußballvereinen. Reihum nennt jeder einen. Wer hängt oder wiederholt, trinkt.', alt: '{a} startet mit Fußballvereinen. Reihum nennt jeder einen. Wer hängt oder wiederholt, zahlt 0,20 € in die Kasse.' },
+  { k: 'Regel', t: 'Bis zur übernächsten Karte ist das Wort „Ja“ verboten. Wer es sagt, trinkt.', alt: 'Bis zur übernächsten Karte ist das Wort „Ja“ verboten. Wer es sagt, zahlt 0,20 € in die Kasse.' },
+  { k: 'Regel', t: 'Bis zur übernächsten Karte darf niemand {a} beim Vornamen nennen. Wer es tut, trinkt.', alt: 'Bis zur übernächsten Karte darf niemand {a} beim Vornamen nennen. Wer es tut, zahlt 0,20 € in die Kasse.' },
+  { k: 'Alle', t: 'Alle, die heute schon über die Arbeit geredet haben, trinken.', alt: 'Alle, die heute schon über die Arbeit geredet haben, stehen kurz auf.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie einen Zug oder Flug verpasst. Wer doch, trinkt.', alt: 'Ich hab noch nie einen Zug oder Flug verpasst. Wer doch, hebt die Hand.' },
+  { k: 'Kette', t: 'Wasserfall: {a} fängt an zu trinken, reihum folgen alle. Aufhören darf erst, wer vor einem aufgehört hat.', alt: 'Klatschkette: {a} klatscht, reihum geht es weiter, immer schneller. Wer patzt, macht fünf Kniebeugen.' },
+  { k: 'Zungenbrecher', t: '{a} sagt dreimal schnell: „Fischers Fritz fischt frische Fische.“ Verhaspelt? Drei Schlucke.', alt: '{a} sagt dreimal schnell: „Fischers Fritz fischt frische Fische.“ Verhaspelt? Zehn Kniebeugen.' },
+  { k: 'Kompliment', t: '{a} macht {b} ein ehrliches Kompliment. Danach stoßen beide an.', alt: '{a} macht {b} ein ehrliches Kompliment. Danach stoßen beide an.' },
+  { k: 'Abstimmung', t: 'Alle zeigen ihr Handy-Hintergrundbild. Wer das schlechteste hat, trinkt.', alt: 'Alle zeigen ihr Handy-Hintergrundbild. Wer das schlechteste hat, muss es sofort ändern.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie bei einem Spiel geschummelt. Wer doch, trinkt.', alt: 'Ich hab noch nie bei einem Spiel geschummelt. Wer doch, steht kurz auf.' },
+  { k: 'Daumenmeister', t: '{a} ist Daumenmeister bis zur übernächsten Karte. Daumen auf den Tisch – alle machen nach, der Letzte trinkt.', alt: '{a} ist Daumenmeister bis zur übernächsten Karte. Daumen auf den Tisch – alle machen nach, der Letzte zahlt 0,20 €.' },
+  { k: 'Geschichte', t: '{a} beginnt eine Geschichte mit einem Satz, reihum geht sie weiter. Wer stockt, trinkt.', alt: '{a} beginnt eine Geschichte mit einem Satz, reihum geht sie weiter. Wer stockt, zahlt 0,20 € in die Kasse.' },
+  { k: 'Duell', t: '{a} gegen {b}: Wer zuerst fünf Länder mit B nennt, gewinnt. Der Verlierer trinkt.', alt: '{a} gegen {b}: Wer zuerst fünf Länder mit B nennt, gewinnt. Der Verlierer macht zehn Kniebeugen.' },
+  { k: 'Wahrheit', t: '{a}, welche App nutzt du am meisten? Handy zeigen – oder drei Schlucke trinken.', alt: '{a}, welche App nutzt du am meisten? Handy zeigen – oder zehn Kniebeugen machen.' },
+  { k: 'Alle', t: 'Alle mit Haustier trinken auf ihr Tier.', alt: 'Alle mit Haustier verraten, wie es heißt.' },
+  { k: 'Abstimmung', t: 'Auf drei zeigt jeder auf den künftigen Bürgermeister der Runde. Wer die meisten Stimmen hat, hält eine Rede und trinkt.', alt: 'Auf drei zeigt jeder auf den künftigen Bürgermeister der Runde. Wer die meisten Stimmen hat, hält eine kurze Rede.' },
+  { k: 'Tausch', t: '{a} und {b} tauschen bis zur nächsten Karte ein Kleidungsstück.', alt: '{a} und {b} tauschen bis zur nächsten Karte ein Kleidungsstück.' },
+  { k: 'Regel', t: 'Bis zur übernächsten Karte wird nicht mit dem Finger gezeigt. Wer es tut, trinkt.', alt: 'Bis zur übernächsten Karte wird nicht mit dem Finger gezeigt. Wer es tut, zahlt 0,20 € in die Kasse.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie mich selbst ausgesperrt. Wer doch, trinkt.', alt: 'Ich hab noch nie mich selbst ausgesperrt. Wer doch, hebt die Hand.' },
+  { k: 'Musik', t: '{a} summt ein Lied. Wer es zuerst errät, verteilt zwei Schlucke.', alt: '{a} summt ein Lied. Wer es zuerst errät, bestimmt jemanden für zehn Kniebeugen.' },
+  { k: 'Aufgabe', t: '{a} imitiert ein Vereinsmitglied. Wer zuerst errät, wer gemeint ist, verteilt zwei Schlucke.', alt: '{a} imitiert ein Vereinsmitglied. Wer zuerst errät, wer gemeint ist, bekommt einen Applaus.' },
+  { k: 'Zählen', t: 'Reihum wird gezählt. Statt jeder Zahl mit 7 oder durch 7 teilbar sagt man „Bahn“. Wer patzt, trinkt.', alt: 'Reihum wird gezählt. Statt jeder Zahl mit 7 oder durch 7 teilbar sagt man „Bahn“. Wer patzt, zahlt 0,20 €.' },
+  { k: 'Abstimmung', t: 'Wer hält am ehesten eine Woche ohne Handy durch? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer hält am ehesten eine Woche ohne Handy durch? Auf drei zeigen alle. Wer gewinnt, gibt das Handy bis zur nächsten Karte ab.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie eine Nachricht an die falsche Person geschickt. Wer doch, trinkt.', alt: 'Ich hab noch nie eine Nachricht an die falsche Person geschickt. Wer doch, steht kurz auf.' },
+  { k: 'Wahrheit', t: '{a}, was war dein schlimmstes Date? Ein Satz – oder drei Schlucke.', alt: '{a}, was war dein schlimmstes Date? Ein Satz – oder zehn Kniebeugen.' },
+  { k: 'Alle', t: 'Wer am jüngsten in der Runde ist, verteilt drei Schlucke.', alt: 'Wer am jüngsten in der Runde ist, bestimmt drei Leute für fünf Kniebeugen.' },
+  { k: 'Kategorie', t: '{a} wählt einen Buchstaben. Reihum nennt jeder eine Stadt damit. Wer hängt, trinkt.', alt: '{a} wählt einen Buchstaben. Reihum nennt jeder eine Stadt damit. Wer hängt, zahlt 0,20 € in die Kasse.' },
+  { k: 'Duell', t: '{a} gegen {b}: Wer länger auf einem Bein steht, gewinnt. Der Verlierer trinkt zwei Schlucke.', alt: '{a} gegen {b}: Wer länger auf einem Bein steht, gewinnt. Der Verlierer macht zehn Kniebeugen.' },
+  { k: 'Regel', t: 'Bis zur übernächsten Karte sagt jeder vor dem Trinken „Prost, Bahnbrecher!“. Wer es vergisst, trinkt nochmal.', alt: 'Bis zur übernächsten Karte sagt jeder vor dem Trinken „Prost, Bahnbrecher!“. Wer es vergisst, zahlt 0,20 €.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie bei einem Film geweint. Wer doch, trinkt.', alt: 'Ich hab noch nie bei einem Film geweint. Wer doch, hebt die Hand.' },
+  { k: 'Zwei Wahrheiten', t: '{a} erzählt zwei wahre Dinge und eine Lüge. Wer die Lüge findet, verteilt zwei Schlucke.', alt: '{a} erzählt zwei wahre Dinge und eine Lüge. Wer die Lüge findet, bekommt einen Applaus.' },
+  { k: 'Abstimmung', t: 'Wer geht auf der Kegeltour als Erster schlafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer geht auf der Kegeltour als Erster schlafen? Auf drei zeigen alle. Wer die meisten Stimmen hat, macht zehn Hampelmänner.' },
+  { k: 'Wahrheit', t: '{a} stellt einer Person eine Frage. Ehrlich antworten – oder drei Schlucke trinken.', alt: '{a} stellt einer Person eine Frage. Ehrlich antworten – oder zehn Kniebeugen machen.' },
+  { k: 'Alle', t: 'Alle, die schon mal auf einem Festival waren, trinken.', alt: 'Alle, die schon mal auf einem Festival waren, stehen kurz auf.' },
+  { k: 'Reim', t: '{a} und {b} sprechen bis zur nächsten Karte nur in Reimen. Wer patzt, trinkt.', alt: '{a} und {b} sprechen bis zur nächsten Karte nur in Reimen. Wer patzt, zahlt 0,20 € in die Kasse.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie im Urlaub einen Sonnenbrand bekommen. Wer doch, trinkt.', alt: 'Ich hab noch nie im Urlaub einen Sonnenbrand bekommen. Wer doch, hebt die Hand.' },
+  { k: 'Duell', t: '{a} gegen {b}: Abwechselnd Automarken nennen. Wer zuerst hängt, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Abwechselnd Automarken nennen. Wer zuerst hängt, zahlt 0,20 € in die Kasse.' }
 ];
 function fmt(n) {
   var v = Math.round(Math.abs(n) * 100) / 100;
@@ -1228,12 +1270,18 @@ function genDates(f) {
 }
 function mkDeadline(d, time, h) { if (!h) return 'Keine Abmeldefrist'; return 'Abmeldung bis ' + dLabel(addDays(d, -h / 24)) + ', ' + time + ' Uhr (' + h + ' h vorher)'; }
 function parseAmt(s) { var v = parseFloat(String(s || '').replace(',', '.')); return isNaN(v) ? 0 : v; }
-// Zufällige Kartenreihenfolge; 'avoid' verhindert, dass dieselbe Karte direkt zweimal kommt
-function shuffleCards(avoid) {
-  var a = CARDS.map((_, i) => i);
+// Zufällige Kartenreihenfolge, ohne Kegelbahn nur Karten ohne bahn-Markierung; 'avoid' verhindert, dass dieselbe Karte direkt zweimal kommt
+function shuffleCards(bahn, avoid) {
+  var a = CARDS.map((_, i) => i).filter(i => bahn || !CARDS[i].bahn);
   for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; }
   if (a.length > 1 && a[0] === avoid) { a[0] = a[1]; a[1] = avoid; }
   return a;
+}
+// Kegelabend heute (bis 6 Uhr zählt noch der Vortag)?
+function bahnToday(events) {
+  var d = new Date(); if (d.getHours() < 6) d = new Date(d.getTime() - 864e5);
+  var iso = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  return (events || []).some(e => e.iso === iso);
 }
 
 class Component extends DCLogic {
@@ -1306,7 +1354,7 @@ class Component extends DCLogic {
       ],
       kasseView: 'konto', kasseOpen: null, abgleich: null,
       newRule: { name: '', amount: '' },
-      party: { idx: 0, alcFree: false, order: shuffleCards() }, wheel: '?',
+      party: { idx: 0, alcFree: false, bahn: true, order: shuffleCards(true) }, wheel: '?',
       players: MEMBERS.map(m => m.id), guests: [], guestName: '',
       exp: [
         { id: 'x1', desc: 'Unterkunft (4 Tage)', amount: 1650, cur: 'EUR', payer: 'm5', among: GROUP.slice() },
@@ -1448,8 +1496,8 @@ class Component extends DCLogic {
       .concat(st.guests.map(g => ({ label: g + ' (Gast) ×', on: true, bg: '#2E3A4D', fg: '#F1EFEA', bd: '#7FB7EC',
         toggle: () => set({ guests: this.state.guests.filter(x => x !== g) }) })));
     var p = st.party;
-    var oi = (p.order || [])[p.idx % CARDS.length];
-    var c = CARDS[oi != null ? oi : p.idx % CARDS.length];
+    var pord = p.order && p.order.length ? p.order : CARDS.map((_, i) => i);
+    var c = CARDS[pord[p.idx % pord.length]];
     var safe = plN ? pl : [{ name: '?' }];
     var ia = (p.idx * 7 + 1) % safe.length, ib = (p.idx * 11 + 2) % safe.length;
     if (ia === ib) ib = (ia + 1) % safe.length;
@@ -1707,12 +1755,14 @@ class Component extends DCLogic {
       freeDisabled: !(fr && fr.name.trim() && freeA > 0),
       saveFree: () => { if (!(fr && fr.name.trim() && freeA > 0)) return; this.bookFines(fr.name.trim(), freeA, 'free'); },
 
-      openParty: () => set({ overlay: 'party', party: Object.assign({}, this.state.party, { idx: 0, order: shuffleCards() }) }), openWheel: () => set({ overlay: 'wheel' }),
-      party: { no: p.idx + 1, kind: c.k, text: ptext, alcFree: p.alcFree, track: p.alcFree ? '#14161B' : 'rgba(0,0,0,.22)', knob: p.alcFree ? '23px' : '3px' },
-      nextCard: () => { var pp = this.state.party, n = pp.idx + 1, ord = pp.order || shuffleCards();
-        if (n % CARDS.length === 0) ord = shuffleCards(ord[CARDS.length - 1]);
+      openParty: () => { var bt = bahnToday(this.state.events); set({ overlay: 'party', party: Object.assign({}, this.state.party, { idx: 0, bahn: bt, order: shuffleCards(bt) }) }); }, openWheel: () => set({ overlay: 'wheel' }),
+      party: { no: p.idx + 1, kind: c.k, text: ptext, size: ptext.length > 115 ? '24px' : ptext.length > 90 ? '27px' : '30px', alcFree: p.alcFree, track: p.alcFree ? '#14161B' : 'rgba(0,0,0,.22)', knob: p.alcFree ? '23px' : '3px',
+        bahn: p.bahn, bahnTrack: p.bahn ? '#14161B' : 'rgba(0,0,0,.22)', bahnKnob: p.bahn ? '23px' : '3px' },
+      nextCard: () => { var pp = this.state.party, n = pp.idx + 1, ord = pp.order && pp.order.length ? pp.order : shuffleCards(pp.bahn);
+        if (n % ord.length === 0) ord = shuffleCards(pp.bahn, ord[ord.length - 1]);
         set({ party: Object.assign({}, pp, { idx: n, order: ord }) }); },
       toggleAlc: () => set({ party: Object.assign({}, this.state.party, { alcFree: !this.state.party.alcFree }) }),
+      toggleBahn: () => { var pp = this.state.party, nb = !pp.bahn; set({ party: Object.assign({}, pp, { bahn: nb, idx: pp.idx + 1, order: shuffleCards(nb) }) }); },
       wheelName: st.wheel, spin: () => { if (!plN) return; set({ wheel: pl[Math.floor(Math.random() * plN)].name }); },
       playerChips: playerChips, gamesDisabled: plN < 2,
       playersLabel: plN < 2 ? 'Mindestens zwei Mitspieler auswählen.' : plN + ' spielen mit' + (st.guests.length ? ', davon ' + st.guests.length + (st.guests.length === 1 ? ' Gast' : ' Gäste') : '') + '.',
