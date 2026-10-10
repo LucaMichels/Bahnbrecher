@@ -247,7 +247,14 @@ begin
 end $$;
 create trigger fines_guard before update on public.fines for each row execute function public.fines_guard();
 
--- Normale Mitglieder dürfen an Mitgliedsdaten nichts ändern; das Einladungstoken sehen nur Admins
+-- Zugriff über die API nur für angemeldete Nutzer; was sie sehen dürfen, regeln die Policies unten.
+-- (Ausdrücklich, weil "Automatically expose new tables" im Projekt ausgeschaltet ist.)
+revoke all on all tables in schema public from anon;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+revoke execute on all functions in schema public from anon, public;
+grant execute on function public.is_member, public.my_member_id, public.is_admin, public.has_right to authenticated;
+
+-- Das Einladungstoken sehen nur Admins
 -- (Spaltenrechte statt Tabellenrecht: invite_token ist nicht lesbar, Abfragen müssen die Spalten nennen)
 revoke select on public.members from anon, authenticated;
 grant select (id, club_id, user_id, name, full_name, role, role_short, color, beitrag, is_admin, active, sort, created_at)
@@ -260,6 +267,7 @@ returns table (member_id uuid, name text, token uuid, claimed boolean)
 language sql stable security definer set search_path = public as $$
   select id, name, invite_token, user_id is not null from members where club_id = c and public.is_admin(c) order by sort, name;
 $$;
+grant execute on function public.invite_tokens to authenticated;
 
 -- =========================================================
 -- Row Level Security
