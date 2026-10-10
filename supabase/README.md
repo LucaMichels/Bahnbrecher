@@ -10,7 +10,7 @@ die Rechte (Strafen erfassen, Kasse usw.) prüft die Datenbank selbst.
    - Region: **Central EU (Frankfurt)**
    - Datenbank-Passwort: sicher im Passwortmanager ablegen (wird für die App nicht gebraucht)
 2. **SQL Editor** → „New query“ → Inhalt von `schema.sql` einfügen → **Run**.
-3. Neue Query → Inhalt von `seed_bahnbrecher.sql` einfügen → **Run**. Am Ende erscheinen die Einladungslinks.
+3. Neue Query → Inhalt von `seed_bahnbrecher.sql` einfügen → **Run**, danach `migration_02_vereinslogin.sql`.
 4. **Authentication → URL Configuration**:
    - Site URL: `https://lucamichels.github.io/Bahnbrecher/`
    - Redirect URLs: `https://lucamichels.github.io/Bahnbrecher/**` und `http://localhost:8770/**`
@@ -19,10 +19,13 @@ die Rechte (Strafen erfassen, Kasse usw.) prüft die Datenbank selbst.
 
 ## Anmeldung in der App
 
-- Mitglieder melden sich per E-Mail-Code an (kein Passwort).
-- Neue Mitglieder öffnen ihren persönlichen Einladungslink (`?join=…`), melden sich an und sind damit ihrem
-  Eintrag im Verein zugeordnet. Ein Link funktioniert nur für eine Person.
-- Admins können einen Link erneuern (`renew_invite`), z. B. bei Handywechsel; der alte wird ungültig.
+- **Ein Vereins-Login pro Verein** (E-Mail + Passwort), angelegt unter Authentication → Users → Add user
+  mit „Auto confirm user“. Es werden keine Mails verschickt.
+- Verknüpfen mit dem Verein (einmalig im SQL Editor, siehe Ende von `migration_02_vereinslogin.sql`).
+- Danach wählt jedes Mitglied in der App sein Profil und legt beim ersten Mal eine 4-stellige PIN fest.
+  PINs und Admin-PIN liegen nur als Hash in der Datenbank und gelten auf jedem Handy.
+- Die Admin-PIN wird beim ersten Admin-Zugriff festgelegt. Zurücksetzen: `update clubs set admin_pin_hash = null`.
+- Die Datenbank trennt die Vereine. Welches Mitglied was darf, prüft beim Vereins-Login die App.
 
 ## Rechte
 

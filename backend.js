@@ -1,17 +1,17 @@
 /* Bahnbrecher – Anbindung an Supabase
-   Login per E-Mail-Code, Einladungslinks, Laden der Vereinsdaten, Live-Updates.
+   Vereins-Login (E-Mail + Passwort), PINs, Laden der Vereinsdaten, Live-Updates.
    Schreibt Änderungen, indem es den alten und neuen Zustand vergleicht (sync),
    damit die Oberfläche selbst kaum Backend-Code braucht. */
 (function () {
   var URL = 'https://hxsvdvjcnqyggeagldob.supabase.co';
   var KEY = 'sb_publishable__RCufLMJuaYWoJxtzgPWlA_ckUbaRGy'; // öffentlicher Schlüssel, Rechte prüft die Datenbank
-  var JOIN = 'bahnbrecher-join';
-  var MEMBER_COLS = 'id,club_id,user_id,name,full_name,role,role_short,color,beitrag,is_admin,active,sort';
+  var MEMBER_COLS = 'id,club_id,user_id,name,full_name,role,role_short,color,beitrag,is_admin,active,sort,has_pin';
+  var CLUB_COLS = 'id,name,place,rights,beitrag_std,anchor_date,anchor_amount,anchor_months,has_admin_pin';
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  var sb = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  var sb = window.supabase.createClient(URL, KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
   var c = null;         // die App-Komponente
-  var club = null, me = null, channel = null, reloadT = null;
+  var club = null, me = null, channel = null, reloadT = null; // me = verknüpftes Mitglied, beim Vereins-Login null
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
@@ -20,24 +20,12 @@
   function err(e) { console.error(e); c.showToast('Nicht gespeichert: ' + ((e && e.message) || e)); scheduleReload(0); }
   function check(r) { if (r && r.error) throw r.error; return r ? r.data : null; }
 
-  // Einladungslink ?join=… merken, bis die Person angemeldet ist
-  var m = /[?&]join=([0-9a-f-]{36})/i.exec(location.search);
-  if (m) { try { localStorage.setItem(JOIN, m[1]); } catch (e) {} history.replaceState(null, '', location.pathname); }
-
   function hasSession() {
-    if (/access_token=|[?&]code=/.test(location.hash + location.search)) return true; // Rückkehr über den Anmeldelink
     try { return Object.keys(localStorage).some(function (k) { return /^sb-.*-auth-token$/.test(k); }); } catch (e) { return false; }
   }
-  function pendingInvite() { try { return localStorage.getItem(JOIN); } catch (e) { return null; } }
 
-  async function sendCode(email) {
-    // Link in der Mail führt zurück in die App; eine offene Einladung reist im Link mit
-    var inv = pendingInvite(), back = location.origin + location.pathname + (inv ? '?join=' + inv : '');
-    var r = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: back } });
-    if (r.error) throw r.error;
-  }
-  async function verifyCode(email, code) {
-    var r = await sb.auth.verifyOtp({ email: email, token: code, type: 'email' });
+  async function signIn(email, pw) {
+    var r = await sb.auth.signInWithPassword({ email: email, password: pw });
     if (r.error) throw r.error;
   }
   async function signOut() {
@@ -46,22 +34,16 @@
     await sb.auth.signOut();
   }
 
-  // Nach dem Login: Einladung einlösen, Verein finden, Daten laden
+  // Nach dem Login: Verein finden (verknüpftes Mitglied oder Vereins-Login), Daten laden
   async function start(comp) {
     c = comp;
     var s = (await sb.auth.getSession()).data.session;
-    if (location.hash.indexOf('access_token') >= 0) history.replaceState(null, '', location.pathname);
     if (!s) { c.remote({ screen: 'welcome', live: false }); return; }
-    var inv = pendingInvite();
-    if (inv) {
-      var cr = await sb.rpc('claim_member', { token: inv });
-      try { localStorage.removeItem(JOIN); } catch (e) {}
-      if (cr.error) c.showToast(cr.error.message);
-    }
     var rows = check(await sb.from('members').select(MEMBER_COLS).eq('user_id', s.user.id).eq('active', true));
-    if (!rows.length) { c.remote({ screen: 'noclub', live: true, liveEmail: s.user.email }); return; }
-    me = rows[0];
-    club = check(await sb.from('clubs').select('*').eq('id', me.club_id).single());
+    var acc = rows.length ? [] : check(await sb.from('club_accounts').select('club_id').eq('user_id', s.user.id));
+    if (!rows.length && !acc.length) { c.remote({ screen: 'noclub', live: true, liveEmail: s.user.email }); return; }
+    me = rows[0] || null;
+    club = check(await sb.from('clubs').select(CLUB_COLS).eq('id', me ? me.club_id : acc[0].club_id).single());
     await reload(true);
     subscribe();
   }
@@ -72,7 +54,7 @@
     var res = await Promise.all([
       sb.from('members').select(MEMBER_COLS).eq('club_id', club.id).eq('active', true).order('sort'),
       q('rules').order('sort'), q('fines').order('created_at'), q('events').order('date'),
-      q('rsvp_status'), q('rsvps'), q('attendance'), sb.from('clubs').select('*').eq('id', club.id).single()
+      q('rsvp_status'), q('rsvps'), q('attendance'), sb.from('clubs').select(CLUB_COLS).eq('id', club.id).single()
     ]);
     var bad = res.find(function (r) { return r.error; });
     if (bad) { if (first) c.remote({ screen: 'welcome', live: false }); c.showToast('Laden fehlgeschlagen: ' + bad.error.message); return; }
@@ -86,7 +68,8 @@
     })));
     COLORS.splice.apply(COLORS, [0, COLORS.length].concat(members.map(function (x) { return x.color; })));
     GROUP.splice.apply(GROUP, [0, GROUP.length].concat(members.map(function (x) { return x.id; })));
-    me = members.find(function (x) { return x.id === me.id; }) || me;
+    if (me) me = members.find(function (x) { return x.id === me.id; }) || me;
+    var pins = {}; members.forEach(function (x) { if (x.has_pin) pins[x.id] = true; });
 
     var why = {}; reasons.forEach(function (r) { why[r.event_id + r.member_id] = r.reason; });
     var evs = events.map(function (e) {
@@ -97,15 +80,16 @@
         deadline: mkDeadline(d, t, e.deadline_hours), frist: e.deadline_hours, rsvp: rs, att: at, series: e.series_id };
     });
     var patch = {
-      live: true, clubId: club.id, clubName: club.name, me: me.id, admin: !!me.is_admin, rights: club.rights,
+      live: true, clubId: club.id, clubName: club.name, rights: club.rights, memberPins: pins, hasAdminPin: !!club.has_admin_pin,
       beitragStd: String(club.beitrag_std),
       rules: rules.map(function (r) { return { id: r.id, name: r.name, amount: +r.amount, cat: r.cat, def: r.def, others: r.others, round: r.round, adopted: r.adopted, active: r.active }; }),
       fines: fines.map(function (f) { return { id: f.id, mid: f.member_id, rid: f.rule_id, name: f.name, amount: +f.amount, round: f.round, date: toShort(f.date), paid: f.paid,
         paidOn: f.paid_on === todayISO() ? 'heute' : undefined }; }),
       events: evs
     };
-    if (first) Object.assign(patch, { screen: 'app', tab: 'start', overlay: null, players: members.map(function (x) { return x.id; }),
-      exp: [], gastro: [], beitragInd: {}, settled: {}, adminPin: String(Math.random()).slice(2) });
+    // Verknüpftes Mitglied geht direkt in die App, beim Vereins-Login erst Profil + PIN
+    if (first) Object.assign(patch, { screen: me ? 'app' : 'profile', me: me ? me.id : (members[0] || {}).id, admin: !!(me && me.is_admin),
+      tab: 'start', overlay: null, players: members.map(function (x) { return x.id; }), exp: [], gastro: [], beitragInd: {}, settled: {} });
     c.remote(patch);
   }
 
@@ -126,7 +110,7 @@
   function sync(prev, st) {
     if (!club || !st.live) return;
     var jobs = [];
-    if (prev.fines !== st.fines) jobs = jobs.concat(syncFines(prev.fines, st.fines));
+    if (prev.fines !== st.fines) jobs = jobs.concat(syncFines(prev.fines, st.fines, st.me));
     if (prev.events !== st.events) jobs = jobs.concat(syncEvents(prev.events, st.events, st.me));
     if (prev.rules !== st.rules) jobs = jobs.concat(syncRules(prev.rules, st.rules));
     if (prev.rights !== st.rights || prev.clubName !== st.clubName || prev.beitragStd !== st.beitragStd) {
@@ -135,12 +119,12 @@
     jobs.forEach(function (j) { Promise.resolve(j).then(function (r) { if (r && r.error) err(r.error); }, err); });
   }
 
-  function syncFines(a, b) {
+  function syncFines(a, b, mid) {
     var A = byId(a), B = byId(b), out = [], ins = [];
     b.forEach(function (f) {
       var o = A[f.id];
       if (!o) ins.push({ id: f.id, club_id: club.id, member_id: f.mid, rule_id: UUID.test(f.rid || '') ? f.rid : null, name: f.name, amount: f.amount,
-        round: !!f.round, date: todayISO(), paid: !!f.paid, created_by: me.id });
+        round: !!f.round, date: todayISO(), paid: !!f.paid, created_by: mid });
       else if (o.paid !== f.paid) out.push(sb.from('fines').update({ paid: f.paid, paid_on: f.paid ? todayISO() : null }).eq('id', f.id));
     });
     if (ins.length) out.push(sb.from('fines').insert(ins));
@@ -186,5 +170,12 @@
     return out;
   }
 
-  window.Backend = { hasSession: hasSession, pendingInvite: pendingInvite, sendCode: sendCode, verifyCode: verifyCode, signOut: signOut, start: start, sync: sync, reload: reload };
+  // ---------- PINs (Prüfung auf dem Server, gespeichert nur als Hash) ----------
+  async function verifyPin(mid, pin) { return !!check(await sb.rpc('verify_pin', { member: mid, pin: pin })); }
+  async function setPin(mid, pin) { check(await sb.rpc('set_pin', { member: mid, pin: pin })); }
+  async function resetPin(mid) { check(await sb.rpc('reset_pin', { member: mid })); }
+  async function verifyAdminPin(pin) { return check(await sb.rpc('verify_admin_pin', { c: club.id, pin: pin })); }
+
+  window.Backend = { hasSession: hasSession, signIn: signIn, signOut: signOut, start: start, sync: sync, reload: reload,
+    verifyPin: verifyPin, setPin: setPin, resetPin: resetPin, verifyAdminPin: verifyAdminPin };
 })();
