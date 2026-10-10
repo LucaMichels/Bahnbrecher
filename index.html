@@ -1,0 +1,1758 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14161B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bahnbrecher">
+<title>Bahnbrecher</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap">
+<style>
+html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}#app{height:100%}
+*{box-sizing:border-box}
+.btn{appearance:none;border:0;border-radius:14px;min-height:52px;padding:0 20px;font:700 16px 'DM Sans',system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.primary{background:#E8A33D;color:#1A1408}
+.ghost{background:transparent;color:#F1EFEA;border:1px solid rgba(255,255,255,.2)}
+.soft{background:#2A2E37;color:#F1EFEA}
+.btn:disabled{opacity:.35;cursor:default}
+.sm{min-height:44px;font-size:15px;border-radius:12px;padding:0 16px}
+.card{background:#1E2128;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.h{font-family:'Archivo',system-ui,sans-serif;font-weight:800;margin:0;letter-spacing:.005em}
+.muted{color:#A3A8B2}
+.eyebrow{font:700 12px 'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#E8A33D;margin:0}
+.lbl{font-size:13px;color:#A3A8B2;display:flex;flex-direction:column;gap:6px}
+.inp{height:50px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#1E2128;color:#F1EFEA;padding:0 14px;font:16px 'DM Sans',sans-serif;width:100%}
+.inp:focus{outline:2px solid #E8A33D;outline-offset:1px}
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 16px 'Archivo',sans-serif;color:#14161B;flex:none}
+.chip{appearance:none;border:1px solid rgba(255,255,255,.18);background:transparent;color:#F1EFEA;border-radius:999px;min-height:44px;padding:0 16px;font:500 15px 'DM Sans',sans-serif;cursor:pointer}
+.iconbtn{appearance:none;border:0;background:#1E2128;color:#F1EFEA;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.layer{position:absolute;inset:0;background:#14161B;z-index:20;display:flex;flex-direction:column}
+.layerhead{padding:54px 16px 10px;display:flex;align-items:center;gap:12px}
+.layerbody{flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:8px 20px 36px;display:flex;flex-direction:column;gap:14px}
+.layerbody>*,.scroller>*{flex-shrink:0;max-width:100%;min-width:0}
+.layerbody,.scroller,.sheet,.layer{overflow-x:hidden !important;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-y}
+.layerbody::-webkit-scrollbar,.scroller::-webkit-scrollbar,.sheet::-webkit-scrollbar{display:none;width:0;height:0}
+.li,.card{min-width:0}
+.li>div{min-width:0}
+.scroller{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.62);z-index:30;display:flex;flex-direction:column;justify-content:flex-end}
+.sheet{background:#1E2128;border-radius:26px 26px 0 0;padding:22px 20px 34px;display:flex;flex-direction:column;gap:14px}
+.list{display:flex;flex-direction:column;background:#1E2128;border-radius:20px;overflow:hidden}
+.li{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);min-height:56px}
+.li:last-child{border-bottom:0}
+.libtn{appearance:none;border:0;background:transparent;color:#F1EFEA;font:inherit;text-align:left;width:100%;cursor:pointer}
+.libtn:disabled{cursor:default;opacity:.45}
+.sw{appearance:none;border:0;width:52px;height:32px;border-radius:999px;position:relative;cursor:pointer;flex:none;padding:0}
+.knob{position:absolute;top:3px;width:26px;height:26px;border-radius:50%;background:#FFFFFF;transition:left .15s}
+.tab{appearance:none;border:0;background:transparent;flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font:500 11px 'DM Sans',sans-serif;cursor:pointer;padding:10px 0 0;min-height:56px}
+.seg{display:flex;background:#1E2128;border-radius:14px;padding:4px;gap:4px}
+.segbtn{appearance:none;border:0;flex:1;min-height:40px;border-radius:10px;font:700 14px 'DM Sans',sans-serif;cursor:pointer}
+.stat{font:800 28px 'Archivo',sans-serif;margin:0}
+.badge{font:700 12px 'DM Sans',sans-serif;border-radius:999px;padding:5px 10px;white-space:nowrap}
+.key{appearance:none;border:0;background:#1E2128;color:#F1EFEA;height:64px;border-radius:16px;font:700 24px 'Archivo',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.textbtn{appearance:none;border:0;background:transparent;color:#E8A33D;font:700 15px 'DM Sans',sans-serif;cursor:pointer;padding:10px 4px;min-height:44px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+<div style="width: 100%; max-width: 520px; height: 100%; margin: 0 auto; position: relative; overflow: hidden; background: #14161B; color: #F1EFEA; font-family: 'DM Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.4;">
+
+<!-- ============ WILLKOMMEN ============ -->
+<sc-if value="{{scr.welcome}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 110px 28px 48px;">
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div style="width: 76px; height: 76px; border-radius: 22px; background: #E8A33D; display: flex; align-items: center; justify-content: center;">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#1A1408" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.6 0 2.5 1.3 2.5 2.8 0 1.2-.6 2-1 2.7-.3.6-.2 1.2.3 2 .9 1.4 2.2 3.4 2.2 6.3 0 3.3-1.6 6.2-4 6.2s-4-2.9-4-6.2c0-2.9 1.3-4.9 2.2-6.3.5-.8.6-1.4.3-2-.4-.7-1-1.5-1-2.7C9.5 3.3 10.4 2 12 2z"></path><path d="M10.2 8.4h3.6"></path></svg>
+    </div>
+    <h1 class="h" style="font-size: 44px; line-height: 1; text-transform: uppercase; letter-spacing: .02em;">Bahn&#173;brecher</h1>
+    <p class="muted" style="margin: 0; font-size: 17px; max-width: 300px;">Strafen, Termine, Spiele und Reisekasse – alles für euren Kegelverein an einem Ort.</p>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <button class="btn primary" onClick="{{goLogin}}">Anmelden</button>
+    <button class="btn ghost" onClick="{{goRegister}}">Verein registrieren</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ LOGIN ============ -->
+<sc-if value="{{scr.login}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 54px 20px 40px; gap: 24px;">
+  <button class="iconbtn" aria-label="Zurück" onClick="{{goWelcome}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <h1 class="h" style="font-size: 32px;">Anmelden</h1>
+    <p class="muted" style="margin: 0;">Alle Mitglieder nutzen die Zugangsdaten eures Vereins. Danach meldest du dich mit deiner persönlichen PIN an.</p>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <label class="lbl">Vereins-E-Mail<input class="inp" type="email" value="{{login.email}}" onChange="{{onLoginEmail}}"></label>
+    <label class="lbl">Passwort<input class="inp" type="password" value="{{login.pw}}" onChange="{{onLoginPw}}"></label>
+    <button class="textbtn" style="align-self: flex-start;" onClick="{{forgot}}">Passwort vergessen?</button>
+  </div>
+  <div style="flex: 1;"></div>
+  <button class="btn primary" onClick="{{doLogin}}">Weiter</button>
+</div>
+</sc-if>
+
+<!-- ============ REGISTRIEREN ============ -->
+<sc-if value="{{scr.register}}" hint-placeholder-val="{{false}}">
+<div class="scroller" style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: 54px 20px 36px; gap: 18px; overflow-y: auto;">
+  <button class="iconbtn" aria-label="Zurück" onClick="{{goWelcome}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <h1 class="h" style="font-size: 32px;">Verein registrieren</h1>
+    <p class="muted" style="margin: 0;">Ein Account für den ganzen Verein. Mitglieder und Strafregeln richtet ihr danach ein.</p>
+  </div>
+  <label class="lbl">Vereinsname<input class="inp" type="text" value="{{reg.name}}" onChange="{{regName}}" placeholder="z. B. Bahnbrecher"></label>
+  <label class="lbl">Ort<input class="inp" type="text" value="{{reg.ort}}" onChange="{{regOrt}}" placeholder="[Ort]"></label>
+  <label class="lbl">Vereins-E-Mail<input class="inp" type="email" value="{{reg.email}}" onChange="{{regEmail}}" placeholder="verein@beispiel.de"></label>
+  <label class="lbl">Passwort<input class="inp" type="password" value="{{reg.pw}}" onChange="{{regPw}}"></label>
+  <label class="lbl">Admin-PIN (4–6 Ziffern)<input class="inp" type="password" inputmode="numeric" value="{{reg.pin}}" onChange="{{regPin}}"></label>
+  <p class="muted" style="margin: 0; font-size: 13px;">Mit der PIN ändert ihr später alle Vereinseinstellungen. Nur der Admin sollte sie kennen.</p>
+  <button class="btn primary" disabled="{{regDisabled}}" onClick="{{doRegister}}">Verein anlegen</button>
+</div>
+</sc-if>
+
+<!-- ============ PROFILWAHL ============ -->
+<sc-if value="{{scr.profile}}" hint-placeholder-val="{{false}}">
+<div class="scroller" style="overflow-y: auto; position: absolute; inset: 0; display: flex; flex-direction: column; padding: 86px 20px 40px; gap: 24px;">
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <p class="eyebrow">{{clubName}}</p>
+    <h1 class="h" style="font-size: 32px;">Wer bist du?</h1>
+    <p class="muted" style="margin: 0;">Wähle dein Profil und bestätige mit deiner PIN. Beim ersten Mal legst du sie fest.</p>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+    <sc-for list="{{mem}}" as="m" hint-placeholder-count="8">
+      <button class="libtn" style="background: #1E2128; border-radius: 18px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 10px;" onClick="{{m.pick}}">
+        <span class="av" style="width: 52px; height: 52px; font-size: 18px; background: {{m.color}};">{{m.initial}}</span>
+        <span style="font-weight: 700;">{{m.name}}</span>
+        <span class="muted" style="font-size: 11px; line-height: 1.2; text-align: center; min-height: 13px;">{{m.roleShort}}</span>
+        <span style="font-size: 11px; line-height: 1.2; text-align: center; min-height: 13px; color: #E8A33D;">{{m.pinHint}}</span>
+      </button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ PERSÖNLICHE PIN ============ -->
+<sc-if value="{{scr.mpin}}" hint-placeholder-val="{{false}}">
+<div class="scroller" style="overflow-y: auto; position: absolute; inset: 0; display: flex; flex-direction: column; padding: 54px 20px 32px;">
+  <button class="iconbtn" aria-label="Zurück zur Profilwahl" onClick="{{mpBack}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+  <div style="flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; padding-top: 4px; gap: 16px;">
+    <span class="av" style="width: 64px; height: 64px; font-size: 22px; background: {{mp.color}};">{{mp.initial}}</span>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+      <h1 class="h" style="font-size: 26px;">{{mp.title}}</h1>
+      <p class="muted" style="margin: 0; font-size: 14px; max-width: 290px;">{{mp.sub}}</p>
+    </div>
+    <div style="display: flex; gap: 14px; height: 18px;" aria-live="polite">
+      <sc-for list="{{mpinDots}}" as="d" hint-placeholder-count="4">
+        <span style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid #E8A33D; background: {{d.bg}};"></span>
+      </sc-for>
+    </div>
+    <p style="margin: 0; min-height: 20px; font-size: 14px; text-align: center; color: {{mp.msgColor}};" role="status">{{mp.msg}}</p>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 300px; margin-top: auto;">
+      <sc-for list="{{mkeys}}" as="k" hint-placeholder-count="12">
+        <sc-if value="{{k.isNum}}" hint-placeholder-val="{{true}}"><button class="key" onClick="{{k.press}}">{{k.label}}</button></sc-if>
+        <sc-if value="{{k.isBlank}}" hint-placeholder-val="{{false}}"><span></span></sc-if>
+        <sc-if value="{{k.isDel}}" hint-placeholder-val="{{false}}"><button class="key" style="background: transparent;" aria-label="Löschen" onClick="{{k.press}}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"></path><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"></path></svg></button></sc-if>
+      </sc-for>
+    </div>
+    <div style="min-height: 44px;">
+      <sc-if value="{{mp.canForgot}}" hint-placeholder-val="{{true}}">
+        <button class="textbtn" onClick="{{mpForgot}}">PIN vergessen?</button>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ APP ============ -->
+<sc-if value="{{scr.app}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0;">
+
+  <!-- Kopfzeile -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; padding: 54px 20px 12px; display: flex; align-items: flex-end; gap: 12px; background: #14161B; z-index: 5;">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+      <p class="eyebrow">{{clubName}}</p>
+      <h1 class="h" style="font-size: 30px;">{{title}}</h1>
+    </div>
+    <sc-if value="{{admin}}" hint-placeholder-val="{{false}}">
+      <span class="badge" style="background: #E8A33D; color: #1A1408; margin-bottom: 8px;">Admin</span>
+    </sc-if>
+    <button class="iconbtn" aria-label="Verein und Verwaltung" onClick="{{openVerein}}">
+      <span class="av" style="width: 34px; height: 34px; font-size: 14px; background: {{me.color}};">{{me.initial}}</span>
+    </button>
+  </div>
+
+  <!-- Inhalt -->
+  <div class="scroller" style="position: absolute; top: 120px; bottom: 84px; left: 0; right: 0; overflow-y: auto; padding: 4px 20px 28px; display: flex; flex-direction: column; gap: 14px;">
+
+    <!-- START -->
+    <sc-if value="{{t.start}}" hint-placeholder-val="{{true}}">
+      <p style="margin: 0; font-size: 17px;">Hallo {{me.name}}, schön dass du da bist.</p>
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <p class="eyebrow">Nächster Termin</p>
+          <span class="badge" style="background: {{next.badgeBg}}; color: {{next.badgeFg}};">{{next.badge}}</span>
+        </div>
+        <div>
+          <h2 class="h" style="font-size: 24px;">{{next.title}} · {{next.label}}</h2>
+          <p class="muted" style="margin: 4px 0 0;">{{next.time}} Uhr · {{next.place}}</p>
+        </div>
+        <p style="margin: 0; font-size: 14px;"><b>{{next.nYes}}</b> zugesagt · <b>{{next.nNo}}</b> abgesagt · <b>{{next.nOpen}}</b> offen</p>
+        <sc-if value="{{next.myOpen}}" hint-placeholder-val="{{true}}">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+            <button class="btn primary sm" onClick="{{next.yes}}">Zusagen</button>
+            <button class="btn soft sm" onClick="{{next.no}}">Absagen</button>
+          </div>
+          <p class="muted" style="margin: 0; font-size: 13px;">{{next.deadline}}</p>
+        </sc-if>
+        <sc-if value="{{next.myYes}}" hint-placeholder-val="{{false}}">
+          <button class="btn soft sm" onClick="{{next.no}}">Doch absagen</button>
+        </sc-if>
+        <sc-if value="{{next.myNo}}" hint-placeholder-val="{{false}}">
+          <p style="margin: 0; font-size: 14px;">Dein Grund: {{next.myReason}}</p>
+          <button class="btn soft sm" onClick="{{next.yes}}">Doch zusagen</button>
+        </sc-if>
+      </div>
+      <sc-if value="{{showKonto}}" hint-placeholder-val="{{true}}">
+        <button class="libtn card" style="flex-direction: row; align-items: center;" onClick="{{openKonto}}">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <p class="eyebrow">Vereinskonto · berechnet</p>
+            <span class="stat" style="font-size: 32px;">{{konto.balanceLabel}}</span>
+            <span class="muted" style="font-size: 13px;">seit Abgleich am {{konto.anchorDate}}</span>
+          </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+        <button class="libtn card" style="gap: 4px;" onClick="{{openKasseMe}}">
+          <span class="muted" style="font-size: 13px;">Deine offenen Strafen</span>
+          <span class="stat">{{myOpen}}</span>
+          <span style="color: #E8A33D; font-size: 13px; font-weight: 700;">Details ›</span>
+        </button>
+        <button class="libtn card" style="gap: 4px;" onClick="{{openKasse}}">
+          <span class="muted" style="font-size: 13px;">Vereinskasse offen</span>
+          <span class="stat">{{totalOpen}}</span>
+          <span style="color: #E8A33D; font-size: 13px; font-weight: 700;">Wer schuldet was ›</span>
+        </button>
+      </div>
+      <button class="btn primary" onClick="{{goTab.strafen}}">Strafe erfassen</button>
+      <button class="libtn card" style="flex-direction: row; align-items: center;" onClick="{{goTab.ausgaben}}">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <p class="eyebrow">Reisekasse</p>
+          <span style="font-weight: 700; font-size: 17px;">{{groupName}}</span>
+          <span style="color: {{myBalColor}};">{{myBalLabel}}</span>
+        </div>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </button>
+    </sc-if>
+
+    <!-- STRAFEN -->
+    <sc-if value="{{t.strafen}}" hint-placeholder-val="{{false}}">
+      <div class="seg" role="tablist">
+        <button class="segbtn" style="background: {{segE.bg}}; color: {{segE.fg}};" onClick="{{showErfassen}}">Erfassen</button>
+        <button class="segbtn" style="background: {{segU.bg}}; color: {{segU.fg}};" onClick="{{showUebersicht}}">Übersicht</button>
+      </div>
+
+      <sc-if value="{{sv.erfassen}}" hint-placeholder-val="{{true}}">
+        <sc-if value="{{finesLocked}}" hint-placeholder-val="{{false}}">
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+              <h2 class="h" style="font-size: 18px;">Für Mitglieder gesperrt</h2>
+            </div>
+            <p class="muted" style="margin: 0;">Strafen erfasst bei euch nur der Admin. Freigeben lässt sich das unter Verwaltung › Mitgliederrechte.</p>
+          </div>
+        </sc-if>
+        <sc-if value="{{finesOpen}}" hint-placeholder-val="{{true}}">
+          <p class="muted" style="margin: 0; font-size: 14px;">1. {{selLabel}}</p>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+            <sc-for list="{{grid}}" as="g" hint-placeholder-count="8">
+              <button class="libtn" aria-pressed="{{g.on}}" style="border: 2px solid {{g.bd}}; background: {{g.bg}}; border-radius: 16px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 6px;" onClick="{{g.toggle}}">
+                <span class="av" style="background: {{g.color}};">{{g.initial}}</span>
+                <span style="font-size: 13px; font-weight: 500;">{{g.name}}</span>
+              </button>
+            </sc-for>
+          </div>
+          <p class="muted" style="margin: 6px 0 0; font-size: 14px;">2. Strafe antippen</p>
+          <sc-for list="{{ruleGroups}}" as="grp" hint-placeholder-count="3">
+            <p class="eyebrow" style="margin-top: 4px;">{{grp.cat}}</p>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+              <sc-for list="{{grp.items}}" as="r" hint-placeholder-count="4">
+                <button class="libtn" style="background: #1E2128; border-radius: 16px; padding: 12px 14px; min-height: 72px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;" onClick="{{r.tap}}">
+                  <span style="font-weight: 700; font-size: 14px; line-height: 1.25;">{{r.name}}</span>
+                  <span style="color: #E8A33D; font-weight: 700; font-size: 14px;">{{r.amountLabel}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+            <button class="libtn" style="border: 1px dashed rgba(255,255,255,.22); border-radius: 16px; padding: 12px 14px; min-height: 72px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;" onClick="{{openFree}}">
+              <span style="font-weight: 700; font-size: 14px;">Freie Strafe</span>
+              <span class="muted" style="font-size: 13px;">eigener Betrag</span>
+            </button>
+          </div>
+        </sc-if>
+        <h2 class="h" style="font-size: 18px; margin-top: 8px;">Zuletzt erfasst</h2>
+        <div class="list">
+          <sc-for list="{{recent}}" as="f" hint-placeholder-count="5">
+            <div class="li">
+              <span class="av" style="width: 34px; height: 34px; font-size: 14px; background: {{f.color}};">{{f.initial}}</span>
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <span style="font-weight: 700;">{{f.who}}</span>
+                <span class="muted" style="font-size: 13px;">{{f.name}} · {{f.date}}</span>
+              </div>
+              <span style="font-weight: 700;">{{f.amountLabel}}</span>
+              <sc-if value="{{f.canDel}}" hint-placeholder-val="{{false}}">
+                <button class="iconbtn" style="background: transparent; width: 36px;" aria-label="Strafe löschen" onClick="{{f.del}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4A49A" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{sv.uebersicht}}" hint-placeholder-val="{{false}}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+          <div class="card" style="gap: 4px;"><p class="muted" style="margin: 0; font-size: 13px;">Offen</p><p class="stat">{{totalOpen}}</p></div>
+          <div class="card" style="gap: 4px;"><p class="muted" style="margin: 0; font-size: 13px;">Bezahlt</p><p class="stat">{{totalPaid}}</p></div>
+        </div>
+        <sc-if value="{{onlyMine}}" hint-placeholder-val="{{false}}">
+          <p class="muted" style="margin: 0; font-size: 13px;">Du siehst nur deine eigenen Strafen. Der Admin hat „Strafen aller sehen“ ausgeschaltet.</p>
+        </sc-if>
+        <div class="list">
+          <sc-for list="{{sums}}" as="s" hint-placeholder-count="8">
+            <div class="li">
+              <span class="av" style="width: 34px; height: 34px; font-size: 14px; background: {{s.color}};">{{s.initial}}</span>
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <span style="font-weight: 700;">{{s.nameLabel}}</span>
+                <span class="muted" style="font-size: 13px;">{{s.countLabel}}</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                <span style="font-weight: 700;">{{s.openLabel}}</span>
+                <sc-if value="{{s.canPay}}" hint-placeholder-val="{{false}}">
+                  <button class="textbtn" style="padding: 0; min-height: 28px; font-size: 13px;" onClick="{{s.pay}}">bezahlt</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- TERMINE -->
+    <sc-if value="{{t.termine}}" hint-placeholder-val="{{false}}">
+      <sc-for list="{{evs}}" as="e" hint-placeholder-count="3">
+        <div class="card">
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="width: 58px; height: 58px; border-radius: 14px; background: #2A2E37; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: none;">
+              <span class="muted" style="font-size: 12px; font-weight: 700;">{{e.wd}}</span>
+              <span class="h" style="font-size: 20px;">{{e.day}}</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-weight: 700; font-size: 17px;">{{e.title}}</span>
+              <span class="muted" style="font-size: 13px;">{{e.time}} Uhr · {{e.place}}</span>
+            </div>
+            <span class="badge" style="background: {{e.badgeBg}}; color: {{e.badgeFg}};">{{e.badge}}</span>
+          </div>
+          <p style="margin: 0; font-size: 14px;"><b>{{e.nYes}}</b> zugesagt · <b>{{e.nNo}}</b> abgesagt · <b>{{e.nOpen}}</b> offen</p>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+            <sc-if value="{{e.myYes}}" hint-placeholder-val="{{false}}"><button class="btn soft sm" onClick="{{e.no}}">Absagen</button></sc-if>
+            <sc-if value="{{e.notYes}}" hint-placeholder-val="{{true}}"><button class="btn primary sm" onClick="{{e.yes}}">Zusagen</button></sc-if>
+            <button class="btn ghost sm" onClick="{{e.detail}}">Wer kommt?</button>
+          </div>
+          <sc-if value="{{e.myOpen}}" hint-placeholder-val="{{false}}">
+            <button class="textbtn" style="align-self: flex-start; padding: 0;" onClick="{{e.no}}">Ich kann nicht – absagen</button>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{admin}}" hint-placeholder-val="{{false}}">
+        <button class="btn ghost" onClick="{{newEvent}}">Termin anlegen</button>
+      </sc-if>
+    </sc-if>
+
+    <!-- SPIELE -->
+    <sc-if value="{{t.spiele}}" hint-placeholder-val="{{false}}">
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <h2 class="h" style="font-size: 18px; flex: 1;">Wer spielt mit?</h2>
+          <button class="textbtn" style="padding: 0 6px;" onClick="{{playersAll}}">Alle</button>
+          <button class="textbtn" style="padding: 0 6px;" onClick="{{playersNone}}">Keine</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <sc-for list="{{playerChips}}" as="p" hint-placeholder-count="11">
+            <button class="chip" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}};" aria-pressed="{{p.on}}" onClick="{{p.toggle}}">{{p.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input id="gast-name" class="inp" style="flex: 1; min-width: 0; height: 44px;" type="text" aria-label="Name des Gastes" value="{{guestName}}" onChange="{{onGuestName}}" placeholder="Gast hinzufügen">
+          <button class="btn soft sm" disabled="{{guestDisabled}}" onClick="{{addGuest}}">Hinzufügen</button>
+        </div>
+        <p class="muted" style="margin: 0; font-size: 13px;">{{playersLabel}}</p>
+      </div>
+      <button class="libtn card" style="background: #E8A33D; color: #1A1408;" disabled="{{gamesDisabled}}" onClick="{{openParty}}">
+        <p class="eyebrow" style="color: #1A1408;">Partyspiel</p>
+        <span class="h" style="font-size: 26px;">Party-Karten</span>
+        <span style="font-size: 14px;">Aufgaben, Regeln und Abstimmungen mit euren Namen.</span>
+      </button>
+      <button class="libtn card" disabled="{{gamesDisabled}}" onClick="{{openWheel}}">
+        <p class="eyebrow">Zufall</p>
+        <span class="h" style="font-size: 22px;">Glücksrad</span>
+        <span class="muted" style="font-size: 14px;">Wer zahlt die nächste Runde?</span>
+      </button>
+      <div class="list">
+        <sc-for list="{{soon}}" as="g" hint-placeholder-count="4">
+          <div class="li">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <span style="font-weight: 700;">{{g.name}}</span>
+              <span class="muted" style="font-size: 13px;">{{g.desc}}</span>
+            </div>
+            <span class="badge" style="background: #2A2E37; color: #A3A8B2;">Bald</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- AUSGABEN -->
+    <sc-if value="{{t.ausgaben}}" hint-placeholder-val="{{false}}">
+      <div class="card">
+        <p class="eyebrow">Gruppe · Basiswährung EUR</p>
+        <h2 class="h" style="font-size: 24px;">{{groupName}}</h2>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <span class="muted">Gesamt</span><span class="stat" style="font-size: 24px;">{{expTotal}}</span>
+        </div>
+        <span style="color: {{myBalColor}}; font-weight: 700;">{{myBalLabel}}</span>
+      </div>
+      <sc-if value="{{canAddExp}}" hint-placeholder-val="{{true}}">
+        <button class="btn primary" onClick="{{openAddExp}}">Ausgabe hinzufügen</button>
+      </sc-if>
+
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;">
+        <h2 class="h" style="font-size: 18px;">So gleicht ihr aus</h2>
+        <span class="muted" style="font-size: 13px;">{{trCompare}}</span>
+      </div>
+      <div class="list">
+        <sc-for list="{{transfers}}" as="x" hint-placeholder-count="3">
+          <div class="li">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <span style="font-weight: 700; text-decoration: {{x.deco}};">{{x.fromName}} → {{x.toName}}</span>
+              <span style="color: #E8A33D; font-weight: 700;">{{x.amountLabel}}</span>
+            </div>
+            <button class="chip" style="background: {{x.bg}}; color: {{x.fg}}; border-color: {{x.bd}};" aria-pressed="{{x.done}}" onClick="{{x.toggle}}">{{x.label}}</button>
+          </div>
+        </sc-for>
+        <sc-if value="{{allSettled}}" hint-placeholder-val="{{false}}">
+          <div class="li"><span class="muted">Alles ausgeglichen.</span></div>
+        </sc-if>
+      </div>
+
+      <h2 class="h" style="font-size: 18px; margin-top: 6px;">Salden</h2>
+      <div class="list">
+        <sc-for list="{{balances}}" as="b" hint-placeholder-count="5">
+          <div class="li">
+            <span class="av" style="width: 34px; height: 34px; font-size: 14px; background: {{b.color}};">{{b.initial}}</span>
+            <span style="flex: 1; font-weight: 700;">{{b.nameLabel}}</span>
+            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+              <span style="font-weight: 700; color: {{b.fg}};">{{b.label}}</span>
+              <span class="muted" style="font-size: 12px;">{{b.sub}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <h2 class="h" style="font-size: 18px; margin-top: 6px;">Ausgaben</h2>
+      <div class="list">
+        <sc-for list="{{expList}}" as="x" hint-placeholder-count="4">
+          <div class="li">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <span style="font-weight: 700;">{{x.desc}}</span>
+              <span class="muted" style="font-size: 13px;">{{x.payerName}} hat bezahlt · für {{x.amongLabel}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+              <span style="font-weight: 700;">{{x.orig}}</span>
+              <sc-if value="{{x.isForeign}}" hint-placeholder-val="{{false}}"><span class="muted" style="font-size: 12px;">{{x.conv}}</span></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <p class="muted" style="margin: 0; font-size: 12px;">Kurs pro Ausgabe gespeichert. Prototyp: Beispielziel Prag, Kurs 1 EUR = {{rate}} CZK.</p>
+    </sc-if>
+  </div>
+
+  <!-- Tab-Leiste -->
+  <nav style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; background: #191B21; border-top: 1px solid rgba(255,255,255,.06); display: flex; padding: 0 6px; z-index: 6;" aria-label="Hauptnavigation">
+    <button class="tab" style="color: {{tc.start}};" onClick="{{goTab.start}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10.5 12 3.5l8.5 7V20.5h-5.5v-6h-6v6H3.5z"></path></svg>Start</button>
+    <button class="tab" style="color: {{tc.strafen}};" onClick="{{goTab.strafen}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M14.6 9.3c-.6-.8-1.5-1.3-2.6-1.3-1.6 0-2.9 1-2.9 2.3 0 3 5.7 1.6 5.7 4.4 0 1.3-1.3 2.3-2.9 2.3-1.1 0-2.1-.5-2.7-1.3M12 6.5V8m0 9v1.5"></path></svg>Strafen</button>
+    <button class="tab" style="color: {{tc.termine}};" onClick="{{goTab.termine}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>Termine</button>
+    <button class="tab" style="color: {{tc.spiele}};" onClick="{{goTab.spiele}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"></rect><circle cx="9" cy="9" r="1.3" fill="currentColor"></circle><circle cx="15" cy="9" r="1.3" fill="currentColor"></circle><circle cx="9" cy="15" r="1.3" fill="currentColor"></circle><circle cx="15" cy="15" r="1.3" fill="currentColor"></circle></svg>Spiele</button>
+    <button class="tab" style="color: {{tc.ausgaben}};" onClick="{{goTab.ausgaben}}">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V7a2 2 0 0 1 2-2h11v3"></path><rect x="4" y="8" width="16" height="11.5" rx="2.5"></rect><circle cx="16" cy="13.75" r="1.3" fill="currentColor"></circle></svg>Ausgaben</button>
+  </nav>
+</div>
+</sc-if>
+
+<!-- ============ TERMIN ANLEGEN ============ -->
+<sc-if value="{{o.evnew}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Schließen" onClick="{{closeEvForm}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Termin anlegen</span>
+  </div>
+  <div class="layerbody">
+    <label class="lbl">Titel<input class="inp" type="text" value="{{evf.title}}" onChange="{{efTitle}}" placeholder="z. B. Kegelabend"></label>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{titleChips}}" as="c" hint-placeholder-count="4">
+        <button class="chip" style="background: {{c.bg}}; color: {{c.fg}}; border-color: {{c.bd}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+      </sc-for>
+    </div>
+    <label class="lbl">Ort<input class="inp" type="text" value="{{evf.place}}" onChange="{{efPlace}}" placeholder="z. B. Zur Schanze, Büren"></label>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px;">
+      <label class="lbl">Erster Termin<input class="inp" style="color-scheme: dark;" type="date" value="{{evf.date}}" onChange="{{efDate}}"></label>
+      <label class="lbl">Uhrzeit<input class="inp" style="color-scheme: dark;" type="time" value="{{evf.time}}" onChange="{{efTime}}"></label>
+    </div>
+
+    <h2 class="h" style="font-size: 17px; margin-top: 6px;">Wiederholung</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{freqChips}}" as="c" hint-placeholder-count="4">
+        <button class="chip" style="background: {{c.bg}}; color: {{c.fg}}; border-color: {{c.bd}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+      </sc-for>
+    </div>
+    <sc-if value="{{evx.rep}}" hint-placeholder-val="{{true}}">
+      <div class="li" style="background: #1E2128; border-radius: 16px; border-bottom: 0;">
+        <div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">Alle</span><span class="muted" style="font-size: 12px;">{{evx.weekText}}</span></div>
+        <button class="iconbtn" style="background: #2A2E37;" aria-label="Rhythmus verkürzen" onClick="{{ivMinus}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+        <span class="h" style="font-size: 17px; min-width: 92px; text-align: center;">{{evx.ivText}}</span>
+        <button class="iconbtn" style="background: #2A2E37;" aria-label="Rhythmus verlängern" onClick="{{ivPlus}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
+    </sc-if>
+    <sc-if value="{{evx.month}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{monthChips}}" as="c" hint-placeholder-count="2">
+          <button class="chip" style="background: {{c.bg}}; color: {{c.fg}}; border-color: {{c.bd}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{evx.rep}}" hint-placeholder-val="{{true}}">
+      <h2 class="h" style="font-size: 17px; margin-top: 6px;">Ende der Serie</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{endChips}}" as="c" hint-placeholder-count="2">
+          <button class="chip" style="background: {{c.bg}}; color: {{c.fg}}; border-color: {{c.bd}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{evx.endCount}}" hint-placeholder-val="{{true}}">
+        <div class="li" style="background: #1E2128; border-radius: 16px; border-bottom: 0;">
+          <span style="flex: 1; font-weight: 500;">Nach</span>
+          <button class="iconbtn" style="background: #2A2E37;" aria-label="Weniger Termine" onClick="{{cntMinus}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+          <span class="h" style="font-size: 17px; min-width: 92px; text-align: center;">{{evx.countText}}</span>
+          <button class="iconbtn" style="background: #2A2E37;" aria-label="Mehr Termine" onClick="{{cntPlus}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+      </sc-if>
+      <sc-if value="{{evx.endDate}}" hint-placeholder-val="{{false}}">
+        <label class="lbl">Letzter möglicher Termin<input class="inp" style="color-scheme: dark;" type="date" value="{{evf.until}}" onChange="{{efUntil}}"></label>
+      </sc-if>
+    </sc-if>
+
+    <h2 class="h" style="font-size: 17px; margin-top: 6px;">Abmeldefrist</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{fristChips}}" as="c" hint-placeholder-count="3">
+        <button class="chip" style="background: {{c.bg}}; color: {{c.fg}}; border-color: {{c.bd}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+      </sc-for>
+    </div>
+
+    <div class="card" style="margin-top: 6px;">
+      <p class="eyebrow">Vorschau</p>
+      <p style="margin: 0; font-weight: 700;">{{evx.summary}}</p>
+      <div class="list" style="background: #14161B;">
+        <sc-for list="{{evPrev}}" as="p" hint-placeholder-count="4">
+          <div class="li" style="min-height: 44px;"><span style="flex: 1;">{{p.label}}</span><span class="muted" style="font-size: 12px;">{{p.note}}</span></div>
+        </sc-for>
+      </div>
+      <span class="muted" style="font-size: 13px;">{{evMore}}</span>
+    </div>
+    <button class="btn primary" disabled="{{evDisabled}}" onClick="{{saveEv}}">{{evSaveLabel}}</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ TERMIN-DETAIL ============ -->
+<sc-if value="{{showEvent}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{closeEvent}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <div style="display: flex; flex-direction: column;">
+      <span class="h" style="font-size: 20px;">{{evd.title}} · {{evd.label}}</span>
+      <span class="muted" style="font-size: 13px;">{{evd.time}} Uhr · {{evd.place}}</span>
+    </div>
+  </div>
+  <div class="layerbody">
+    <h2 class="h" style="font-size: 17px;">Zugesagt ({{evd.nYes}})</h2>
+    <div class="list">
+      <sc-for list="{{evd.yesL}}" as="m" hint-placeholder-count="4">
+        <div class="li"><span class="av" style="width: 32px; height: 32px; font-size: 13px; background: {{m.color}};">{{m.initial}}</span><span style="font-weight: 500;">{{m.nameLabel}}</span></div>
+      </sc-for>
+    </div>
+    <h2 class="h" style="font-size: 17px;">Abgesagt ({{evd.nNo}})</h2>
+    <sc-if value="{{evd.hideReasons}}" hint-placeholder-val="{{false}}">
+      <p class="muted" style="margin: 0; font-size: 13px;">Abmeldegründe sind nur für den Admin sichtbar.</p>
+    </sc-if>
+    <div class="list">
+      <sc-for list="{{evd.noL}}" as="m" hint-placeholder-count="2">
+        <div class="li"><span class="av" style="width: 32px; height: 32px; font-size: 13px; background: {{m.color}};">{{m.initial}}</span><span style="flex: 1; font-weight: 500;">{{m.nameLabel}}</span><span class="muted" style="font-size: 13px;">{{m.reason}}</span></div>
+      </sc-for>
+    </div>
+    <h2 class="h" style="font-size: 17px;">Noch offen ({{evd.nOpen}})</h2>
+    <div class="list">
+      <sc-for list="{{evd.openL}}" as="m" hint-placeholder-count="2">
+        <div class="li"><span class="av" style="width: 32px; height: 32px; font-size: 13px; background: {{m.color}};">{{m.initial}}</span><span style="font-weight: 500;">{{m.nameLabel}}</span></div>
+      </sc-for>
+    </div>
+    <sc-if value="{{evd.showAtt}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px;">
+        <h2 class="h" style="font-size: 17px;">Anwesenheit am Abend</h2>
+        <p class="muted" style="margin: 0; font-size: 13px;">Abhaken, wer wirklich da war. {{evd.attCount}}</p>
+      </div>
+      <div class="list">
+        <sc-for list="{{evd.attL}}" as="a" hint-placeholder-count="8">
+          <div class="li">
+            <span class="av" style="width: 32px; height: 32px; font-size: 13px; background: {{a.color}};">{{a.initial}}</span>
+            <span style="flex: 1; font-weight: 500;">{{a.name}}</span>
+            <button class="chip" style="min-height: 38px; padding: 0 12px; background: {{a.daBg}}; color: {{a.daFg}}; border-color: {{a.daBd}};" aria-pressed="{{a.isDa}}" onClick="{{a.da}}">Da</button>
+            <button class="chip" style="min-height: 38px; padding: 0 12px; background: {{a.feBg}}; color: {{a.feFg}}; border-color: {{a.feBd}};" aria-pressed="{{a.isFe}}" onClick="{{a.fehlt}}">Fehlt</button>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ VEREINSKASSE ============ -->
+<sc-if value="{{o.kasse}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{closeOverlay}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Vereinskasse</span>
+  </div>
+  <div class="layerbody">
+    <sc-if value="{{showKonto}}" hint-placeholder-val="{{true}}">
+      <div class="seg">
+        <button class="segbtn" style="background: {{kvK.bg}}; color: {{kvK.fg}};" onClick="{{showKontoView}}">Konto</button>
+        <button class="segbtn" style="background: {{kvS.bg}}; color: {{kvS.fg}};" onClick="{{showStrafenView}}">Offene Strafen</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{kv.konto}}" hint-placeholder-val="{{false}}">
+      <div class="card" style="gap: 4px;">
+        <p class="eyebrow">Kontostand · berechnet</p>
+        <span class="stat" style="font-size: 36px;">{{konto.balanceLabel}}</span>
+      </div>
+      <div class="list">
+        <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">Abgeglichener Stand</span><span class="muted" style="font-size: 13px;">am {{konto.anchorDate}}</span></div><span style="font-weight: 700;">{{konto.anchorLabel}}</span></div>
+        <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">+ Monatsbeiträge</span><span class="muted" style="font-size: 13px;">{{konto.beitragSub}}</span></div><span style="font-weight: 700; color: #93DAAA;">{{konto.beitragLabel}}</span></div>
+        <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">+ Bezahlte Strafen</span><span class="muted" style="font-size: 13px;">{{konto.finesSub}}</span></div><span style="font-weight: 700; color: #93DAAA;">{{konto.finesLabel}}</span></div>
+        <div class="li"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">− Gaststätte</span><span class="muted" style="font-size: 13px;">{{konto.gastroSub}}</span></div><span style="font-weight: 700; color: #F6AFA5;">{{konto.gastroLabel}}</span></div>
+        <div class="li" style="background: #2A2E37;"><span class="h" style="flex: 1; font-size: 17px;">= Kontostand</span><span class="h" style="font-size: 17px;">{{konto.balanceLabel}}</span></div>
+      </div>
+      <p class="muted" style="margin: 0; font-size: 13px;">Angenommen: Alle Beiträge sind eingegangen. Noch offene Strafen ({{totalOpen}}) sind nicht enthalten.</p>
+
+      <h2 class="h" style="font-size: 18px; margin-top: 6px;">Zahlungen an die Gaststätte</h2>
+      <p class="muted" style="margin: -6px 0 0; font-size: 13px;">Pro Kegelabend vom Gemeinschaftskonto bezahlt.</p>
+      <div class="list">
+        <sc-for list="{{gastroList}}" as="g" hint-placeholder-count="3">
+          <div class="li">
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <span style="font-weight: 500;">{{g.label}}</span>
+              <span class="muted" style="font-size: 13px;">Zur Schanze</span>
+            </div>
+            <sc-if value="{{g.editable}}" hint-placeholder-val="{{false}}">
+              <label style="display: flex; align-items: center; gap: 6px;"><span class="muted" style="font-size: 13px;">€</span><input class="inp" style="width: 100px; height: 44px; text-align: right;" type="text" inputmode="decimal" aria-label="Betrag Gaststätte {{g.date}}" value="{{g.amount}}" onChange="{{g.onAmt}}" placeholder="0,00"></label>
+            </sc-if>
+            <sc-if value="{{g.readonly}}" hint-placeholder-val="{{true}}">
+              <span style="font-weight: 700;">{{g.amountLabel}}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{canKasse}}" hint-placeholder-val="{{false}}">
+        <button class="btn ghost sm" onClick="{{addGastro}}">Zahlung für heutigen Kegelabend eintragen</button>
+      </sc-if>
+
+      <h2 class="h" style="font-size: 18px; margin-top: 6px;">Monatsbeiträge</h2>
+      <div class="list">
+        <sc-for list="{{beitragList}}" as="b" hint-placeholder-count="11">
+          <div class="li" style="min-height: 48px;">
+            <span class="av" style="width: 30px; height: 30px; font-size: 11px; background: {{b.color}};">{{b.initial}}</span>
+            <span style="flex: 1; font-weight: 500;">{{b.full}}</span>
+            <span style="font-size: 12px; color: {{b.tagColor}};">{{b.tag}}</span>
+            <span style="font-weight: 700; min-width: 70px; text-align: right;">{{b.amountLabel}}</span>
+          </div>
+        </sc-for>
+        <div class="li" style="background: #2A2E37;"><div style="flex: 1; display: flex; flex-direction: column;"><span class="h" style="font-size: 16px;">Monatlich gesamt</span><span class="muted" style="font-size: 13px;">{{konto.beitragInfo}}</span></div><span class="h" style="font-size: 16px;">{{konto.monthlyLabel}}</span></div>
+      </div>
+      <button class="btn soft sm" onClick="{{openBeitraege}}">{{beitragBtn}}</button>
+      <sc-if value="{{canKasse}}" hint-placeholder-val="{{false}}">
+        <button class="btn ghost sm" onClick="{{openAbgleich}}">Mit echtem Kontostand abgleichen</button>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{kv.strafen}}" hint-placeholder-val="{{true}}">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <div class="card" style="gap: 4px;"><p class="muted" style="margin: 0; font-size: 13px;">Offen</p><p class="stat">{{totalOpen}}</p></div>
+      <div class="card" style="gap: 4px;"><p class="muted" style="margin: 0; font-size: 13px;">Bezahlt</p><p class="stat">{{totalPaid}}</p></div>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 13px;">{{kasseHint}}</p>
+    <div class="list">
+      <sc-for list="{{kasseList}}" as="k" hint-placeholder-count="8">
+        <div style="border-bottom: 1px solid rgba(255,255,255,.06);">
+          <button class="libtn li" style="border-bottom: 0;" aria-expanded="{{k.expanded}}" onClick="{{k.toggle}}">
+            <span class="av" style="width: 34px; height: 34px; font-size: 13px; background: {{k.color}};">{{k.initial}}</span>
+            <div style="flex: 1; display: flex; flex-direction: column;">
+              <span style="font-weight: 700;">{{k.nameLabel}}</span>
+              <span class="muted" style="font-size: 13px;">{{k.sub}}</span>
+            </div>
+            <span style="font-weight: 700; color: {{k.fg}};">{{k.openLabel}}</span>
+            <span style="color: #A3A8B2; font-size: 18px; width: 14px; text-align: center;">{{k.chev}}</span>
+          </button>
+          <sc-if value="{{k.expanded}}" hint-placeholder-val="{{false}}">
+            <div style="padding: 0 16px 14px 62px; display: flex; flex-direction: column; gap: 12px;">
+              <sc-for list="{{k.groups}}" as="g" hint-placeholder-count="2">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span class="eyebrow" style="font-size: 11px;">{{g.label}}</span>
+                    <span style="font-size: 13px; font-weight: 700;">{{g.sumLabel}}</span>
+                  </div>
+                  <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                      <span class="muted">{{it.name}}</span><span>{{it.amountLabel}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+              <sc-if value="{{k.none}}" hint-placeholder-val="{{false}}"><span class="muted" style="font-size: 14px;">Keine offenen Strafen.</span></sc-if>
+              <sc-if value="{{k.canPay}}" hint-placeholder-val="{{false}}">
+                <button class="btn soft sm" onClick="{{k.pay}}">Alles als bezahlt markieren</button>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ BEITRÄGE ============ -->
+<sc-if value="{{o.beitraege}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backFromBeitraege}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Monatsbeiträge</span>
+  </div>
+  <div class="layerbody">
+    <div class="card">
+      <label class="lbl">Standardbeitrag pro Monat in €<input class="inp" type="text" inputmode="decimal" value="{{beitragStd}}" onChange="{{onBeitragStd}}"></label>
+      <p class="muted" style="margin: 0; font-size: 13px;">Laut Satzung §4: 15 € pro Monat. Änderungen beschließt die Mitgliederversammlung.</p>
+    </div>
+    <h2 class="h" style="font-size: 17px;">Pro Mitglied</h2>
+    <p class="muted" style="margin: -6px 0 0; font-size: 13px;">Leer lassen = Standardbeitrag. Abweichende Beträge trägst du hier ein.</p>
+    <div class="list">
+      <sc-for list="{{beitragList}}" as="b" hint-placeholder-count="11">
+        <div class="li">
+          <span class="av" style="width: 32px; height: 32px; font-size: 12px; background: {{b.color}};">{{b.initial}}</span>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <span style="font-weight: 500;">{{b.full}}</span>
+            <span style="font-size: 12px; color: {{b.tagColor}};">{{b.tag}}</span>
+          </div>
+          <input class="inp" style="width: 92px; height: 44px; text-align: right;" type="text" inputmode="decimal" aria-label="Beitrag {{b.full}}" value="{{b.value}}" placeholder="{{b.placeholder}}" onChange="{{b.onChange}}">
+        </div>
+      </sc-for>
+      <div class="li" style="background: #2A2E37;"><span class="h" style="flex: 1; font-size: 16px;">Monatlich gesamt</span><span class="h" style="font-size: 16px;">{{konto.monthlyLabel}}</span></div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ ABGLEICH ============ -->
+<sc-if value="{{showAbgleich}}" hint-placeholder-val="{{false}}">
+<div class="scrim">
+  <div class="sheet">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 class="h" style="font-size: 22px; flex: 1;">Kontostand abgleichen</h2>
+      <button class="iconbtn" style="background: #2A2E37;" aria-label="Abbrechen" onClick="{{closeAbgleich}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 14px;">Trag den echten Stand laut Banking-App ein. Ab heute rechnet die App von diesem Betrag aus weiter.</p>
+    <label class="lbl">Kontostand heute in €<input class="inp" type="text" inputmode="decimal" value="{{abgleichVal}}" onChange="{{onAbgleich}}" placeholder="{{konto.balancePlain}}"></label>
+    <p class="muted" style="margin: 0; font-size: 13px;">{{abgleichDiff}}</p>
+    <button class="btn primary" disabled="{{abgleichDisabled}}" onClick="{{saveAbgleich}}">Abgleichen</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ VEREIN ============ -->
+<sc-if value="{{o.verein}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Schließen" onClick="{{closeOverlay}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Verein</span>
+  </div>
+  <div class="layerbody">
+    <div class="card" style="flex-direction: row; align-items: center; gap: 14px;">
+      <div style="width: 56px; height: 56px; border-radius: 16px; background: #E8A33D; display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A1408" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1.6 0 2.5 1.3 2.5 2.8 0 1.2-.6 2-1 2.7-.3.6-.2 1.2.3 2 .9 1.4 2.2 3.4 2.2 6.3 0 3.3-1.6 6.2-4 6.2s-4-2.9-4-6.2c0-2.9 1.3-4.9 2.2-6.3.5-.8.6-1.4.3-2-.4-.7-1-1.5-1-2.7C9.5 3.3 10.4 2 12 2z"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <span class="h" style="font-size: 20px;">{{clubName}}</span>
+        <span class="muted" style="font-size: 14px;">{{memberCount}} Mitglieder · angemeldet als {{me.name}}</span>
+      </div>
+    </div>
+    <div class="list">
+      <button class="libtn li" onClick="{{switchProfile}}"><span style="flex: 1; font-weight: 500;">Profil wechseln</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <sc-if value="{{memberRules}}" hint-placeholder-val="{{false}}">
+        <button class="libtn li" onClick="{{openRules}}"><span style="flex: 1; font-weight: 500;">Strafregeln</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      </sc-if>
+      <button class="libtn li" onClick="{{openAdminOrPin}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8A33D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+        <span style="flex: 1; font-weight: 500;">Verwaltung</span>
+        <span class="muted" style="font-size: 13px;">{{adminHint}}</span>
+      </button>
+    </div>
+    <h2 class="h" style="font-size: 17px; margin-top: 4px;">Ämter</h2>
+    <div class="list">
+      <sc-for list="{{officers}}" as="m" hint-placeholder-count="8">
+        <div class="li">
+          <span class="av" style="width: 32px; height: 32px; font-size: 12px; background: {{m.color}};">{{m.initial}}</span>
+          <span style="flex: 1; font-weight: 500;">{{m.full}}</span>
+          <span class="muted" style="font-size: 13px; text-align: right; max-width: 150px;">{{m.role}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 12px;">Laut Protokoll der Mitgliederversammlung vom 06.08.2025.</p>
+    <button class="btn ghost" onClick="{{logout}}">Abmelden</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ PIN ============ -->
+<sc-if value="{{o.pin}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backToVerein}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 28px 40px; gap: 18px;">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E8A33D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+    <h1 class="h" style="font-size: 26px;">Admin-PIN eingeben</h1>
+    <div style="display: flex; gap: 14px; height: 18px;" aria-live="polite">
+      <sc-for list="{{pinDots}}" as="d" hint-placeholder-count="4">
+        <span style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid #E8A33D; background: {{d.bg}};"></span>
+      </sc-for>
+    </div>
+    <p style="margin: 0; min-height: 20px; font-size: 14px; color: {{pinMsgColor}};">{{pinMsg}}</p>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; max-width: 300px; margin-top: auto;">
+      <sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+        <sc-if value="{{k.isNum}}" hint-placeholder-val="{{true}}"><button class="key" onClick="{{k.press}}">{{k.label}}</button></sc-if>
+        <sc-if value="{{k.isBlank}}" hint-placeholder-val="{{false}}"><span></span></sc-if>
+        <sc-if value="{{k.isDel}}" hint-placeholder-val="{{false}}"><button class="key" style="background: transparent;" aria-label="Löschen" onClick="{{k.press}}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"></path><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"></path></svg></button></sc-if>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ VERWALTUNG ============ -->
+<sc-if value="{{o.admin}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backToVerein}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Verwaltung</span>
+    <span class="badge" style="background: #E8A33D; color: #1A1408; margin-left: auto;">Admin</span>
+  </div>
+  <div class="layerbody">
+    <p class="muted" style="margin: 0; font-size: 13px;">Der Admin-Modus endet nach 10 Minuten ohne Aktivität.</p>
+    <div class="list">
+      <button class="libtn li" onClick="{{openRights}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Mitgliederrechte</span><span class="muted" style="font-size: 13px;">Was Standard-Mitglieder dürfen</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <button class="libtn li" onClick="{{openPins}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Mitglieder-PINs</span><span class="muted" style="font-size: 13px;">{{pinSetLabel}}</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <button class="libtn li" onClick="{{openBeitraegeAdmin}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Beiträge &amp; Konto</span><span class="muted" style="font-size: 13px;">{{konto.monthlyLabel}} pro Monat</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <button class="libtn li" onClick="{{openRules}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Strafregeln &amp; Katalog</span><span class="muted" style="font-size: 13px;">{{rulesCount}} aktive Regeln</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <button class="libtn li" disabled="{{yes}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Mitglieder</span><span class="muted" style="font-size: 13px;">im Prototyp noch nicht ausgearbeitet</span></div></button>
+      <button class="libtn li" onClick="{{openEvAdmin}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Termine &amp; Serien</span><span class="muted" style="font-size: 13px;">Einzeltermine und Serien anlegen</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A3A8B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      <button class="libtn li" disabled="{{yes}}"><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 700;">Vereinsdaten, Passwort, PIN</span><span class="muted" style="font-size: 13px;">im Prototyp noch nicht ausgearbeitet</span></div></button>
+    </div>
+    <button class="btn ghost" onClick="{{endAdmin}}">Admin-Modus beenden</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ MITGLIEDER-PINS ============ -->
+<sc-if value="{{o.pins}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backToAdmin}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Mitglieder-PINs</span>
+  </div>
+  <div class="layerbody">
+    <p class="muted" style="margin: 0; font-size: 14px;">Jedes Mitglied meldet sich mit einer eigenen PIN an. Hat jemand seine PIN vergessen, setzt du sie hier zurück – beim nächsten Anmelden legt er eine neue fest.</p>
+    <div class="list">
+      <sc-for list="{{pinList}}" as="m" hint-placeholder-count="8">
+        <div class="li">
+          <span class="av" style="width: 32px; height: 32px; font-size: 12px; background: {{m.color}};">{{m.initial}}</span>
+          <div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">{{m.full}}</span><span style="font-size: 13px; color: {{m.statusColor}};">{{m.status}}</span></div>
+          <sc-if value="{{m.has}}" hint-placeholder-val="{{true}}"><button class="btn soft sm" aria-label="{{m.resetLabel}}" onClick="{{m.reset}}">Zurücksetzen</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 13px;">Die Admin-PIN ist davon getrennt und öffnet nur die Verwaltung.</p>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ RECHTE ============ -->
+<sc-if value="{{o.rights}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backToAdmin}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Mitgliederrechte</span>
+  </div>
+  <div class="layerbody">
+    <p class="muted" style="margin: 0; font-size: 14px;">Gilt für alle Mitglieder. Einzelne Ämter haben manche Rechte immer. Der Admin darf immer alles.</p>
+    <div class="list">
+      <sc-for list="{{rightsList}}" as="r" hint-placeholder-count="8">
+        <div class="li">
+          <div style="flex: 1; display: flex; flex-direction: column;"><span style="font-weight: 500;">{{r.label}}</span><span class="muted" style="font-size: 12px;">{{r.note}}</span></div>
+          <button class="sw" style="background: {{r.track}};" role="switch" aria-checked="{{r.on}}" aria-label="{{r.label}}" onClick="{{r.toggle}}"><span class="knob" style="left: {{r.knob}};"></span></button>
+        </div>
+      </sc-for>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 13px;">Probier es aus: Schalte „Strafen erfassen“ aus, beende den Admin-Modus und öffne den Reiter Strafen.</p>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ STRAFREGELN ============ -->
+<sc-if value="{{o.rules}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{backFromRules}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Strafregeln</span>
+  </div>
+  <div class="layerbody">
+    <button class="btn soft" onClick="{{openCatalog}}">Aus Katalog übernehmen ({{catalogCount}})</button>
+    <div class="list">
+      <sc-for list="{{rulesAll}}" as="r" hint-placeholder-count="6">
+        <div class="li">
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <span style="font-weight: 700;">{{r.name}}</span>
+            <span class="muted" style="font-size: 13px;">{{r.amountLabel}} · {{r.def}}</span>
+          </div>
+          <button class="sw" style="background: {{r.track}};" role="switch" aria-checked="{{r.active}}" aria-label="{{r.name}} aktiv" onClick="{{r.toggle}}"><span class="knob" style="left: {{r.knob}};"></span></button>
+        </div>
+      </sc-for>
+    </div>
+    <div class="card">
+      <h2 class="h" style="font-size: 17px;">Neue Regel anlegen</h2>
+      <label class="lbl">Name<input class="inp" type="text" value="{{newRule.name}}" onChange="{{nrName}}" placeholder="z. B. Falsche Bahn gewählt"></label>
+      <label class="lbl">Betrag in €<input class="inp" type="text" inputmode="decimal" value="{{newRule.amount}}" onChange="{{nrAmount}}" placeholder="0,50"></label>
+      <button class="btn primary sm" disabled="{{nrDisabled}}" onClick="{{addRule}}">Regel anlegen</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ KATALOG ============ -->
+<sc-if value="{{o.catalog}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Zurück" onClick="{{openRules}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+    <span class="h" style="font-size: 22px;">Strafkatalog</span>
+  </div>
+  <div class="layerbody">
+    <p class="muted" style="margin: 0; font-size: 14px;">Vorlagen der App. Beim Übernehmen könnt ihr den Betrag später anpassen.</p>
+    <div class="list">
+      <sc-for list="{{catalog}}" as="c" hint-placeholder-count="4">
+        <div class="li">
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <span style="font-weight: 700;">{{c.name}}</span>
+            <span class="muted" style="font-size: 13px;">{{c.cat}} · Vorschlag {{c.amountLabel}}</span>
+          </div>
+          <button class="chip" style="border-color: #E8A33D; color: #E8A33D;" onClick="{{c.adopt}}">Übernehmen</button>
+        </div>
+      </sc-for>
+      <sc-if value="{{catalogEmpty}}" hint-placeholder-val="{{false}}">
+        <div class="li"><span class="muted">Alle Vorlagen sind übernommen.</span></div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ PARTY-KARTEN ============ -->
+<sc-if value="{{o.party}}" hint-placeholder-val="{{false}}">
+<div class="layer" style="background: #E8A33D; color: #1A1408;">
+  <div class="layerhead">
+    <button class="iconbtn" style="background: rgba(0,0,0,.12); color: #1A1408;" aria-label="Beenden" onClick="{{closeOverlay}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    <span class="h" style="font-size: 20px;">Party-Karten</span>
+    <span style="margin-left: auto; font-weight: 700; font-size: 14px;">Karte {{party.no}}</span>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; padding: 16px 24px 36px; gap: 20px;">
+    <div style="flex: 1; background: #14161B; color: #F1EFEA; border-radius: 28px; padding: 28px 24px; display: flex; flex-direction: column; justify-content: space-between;">
+      <p class="eyebrow">{{party.kind}}</p>
+      <p class="h" style="font-size: 30px; line-height: 1.15;">{{party.text}}</p>
+      <p class="muted" style="margin: 0; font-size: 13px;">Eigene Karten legt ihr später in der Verwaltung an.</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="flex: 1; font-weight: 700;">Ohne Alkohol</span>
+      <button class="sw" style="background: {{party.track}};" role="switch" aria-checked="{{party.alcFree}}" aria-label="Ohne Alkohol" onClick="{{toggleAlc}}"><span class="knob" style="left: {{party.knob}};"></span></button>
+    </div>
+    <button class="btn" style="background: #14161B; color: #F1EFEA;" onClick="{{nextCard}}">Nächste Karte</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ GLÜCKSRAD ============ -->
+<sc-if value="{{o.wheel}}" hint-placeholder-val="{{false}}">
+<div class="layer">
+  <div class="layerhead">
+    <button class="iconbtn" aria-label="Beenden" onClick="{{closeOverlay}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    <span class="h" style="font-size: 20px;">Glücksrad</span>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 24px 40px; gap: 28px;">
+    <p class="muted" style="margin: 0; font-size: 17px;">Wer zahlt die nächste Runde?</p>
+    <div style="width: 250px; height: 250px; border-radius: 50%; border: 10px solid #E8A33D; display: flex; align-items: center; justify-content: center; background: #1E2128;">
+      <span class="h" style="font-size: 38px;">{{wheelName}}</span>
+    </div>
+    <button class="btn primary" style="width: 100%;" onClick="{{spin}}">Drehen</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ ABSAGE-SHEET ============ -->
+<sc-if value="{{showAbsage}}" hint-placeholder-val="{{false}}">
+<div class="scrim">
+  <div class="sheet">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 class="h" style="font-size: 22px; flex: 1;">Absagen · {{abEvLabel}}</h2>
+      <button class="iconbtn" style="background: #2A2E37;" aria-label="Abbrechen" onClick="{{cancelAbsage}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    </div>
+    <label class="lbl">Grund (Pflichtfeld)<input id="absage-grund" class="inp" type="text" value="{{abText}}" onChange="{{onAbText}}" placeholder="Warum kannst du nicht?"></label>
+    <p class="muted" style="margin: 0; font-size: 13px;">{{abVisibility}}</p>
+    <button class="btn primary" disabled="{{abDisabled}}" onClick="{{sendAbsage}}">Absage senden</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ FREIE STRAFE ============ -->
+<sc-if value="{{showFree}}" hint-placeholder-val="{{false}}">
+<div class="scrim">
+  <div class="sheet">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 class="h" style="font-size: 22px; flex: 1;">Freie Strafe</h2>
+      <button class="iconbtn" style="background: #2A2E37;" aria-label="Abbrechen" onClick="{{closeFree}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 14px;">Für: {{freeFor}}</p>
+    <label class="lbl">Wofür?<input class="inp" type="text" value="{{free.name}}" onChange="{{freeName}}" placeholder="z. B. Bahn blockiert"></label>
+    <label class="lbl">Betrag in €<input class="inp" type="text" inputmode="decimal" value="{{free.amount}}" onChange="{{freeAmount}}" placeholder="1,00"></label>
+    <button class="btn primary" disabled="{{freeDisabled}}" onClick="{{saveFree}}">Strafe buchen</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ AUSGABE HINZUFÜGEN ============ -->
+<sc-if value="{{showAddExp}}" hint-placeholder-val="{{false}}">
+<div class="scrim">
+  <div class="sheet scroller" style="max-height: 92%; overflow-y: auto;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 class="h" style="font-size: 22px; flex: 1;">Neue Ausgabe</h2>
+      <button class="iconbtn" style="background: #2A2E37;" aria-label="Abbrechen" onClick="{{closeAddExp}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+    </div>
+    <label class="lbl">Beschreibung<input class="inp" type="text" value="{{ef.desc}}" onChange="{{efDesc}}" placeholder="z. B. Abendessen"></label>
+    <div style="display: flex; gap: 10px; align-items: flex-end;">
+      <label class="lbl" style="flex: 1;">Betrag<input class="inp" type="text" inputmode="decimal" value="{{ef.amount}}" onChange="{{efAmount}}" placeholder="0,00"></label>
+      <div class="seg" style="height: 50px;">
+        <sc-for list="{{curChips}}" as="c" hint-placeholder-count="2">
+          <button class="segbtn" style="min-height: 42px; padding: 0 12px; background: {{c.bg}}; color: {{c.fg}};" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <p class="muted" style="margin: 0; font-size: 14px;">Bezahlt von</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{payerChips}}" as="p" hint-placeholder-count="5">
+        <button class="chip" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}};" aria-pressed="{{p.on}}" onClick="{{p.pick}}">{{p.name}}</button>
+      </sc-for>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <p class="muted" style="margin: 0; font-size: 14px; flex: 1;">Aufteilen auf ({{splitCount}})</p>
+      <button class="textbtn" style="padding: 0 6px;" onClick="{{splitAll}}">Alle</button>
+      <button class="textbtn" style="padding: 0 6px;" onClick="{{splitNone}}">Keine</button>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{splitChips}}" as="p" hint-placeholder-count="11">
+        <button class="chip" style="background: {{p.bg}}; color: {{p.fg}}; border-color: {{p.bd}};" aria-pressed="{{p.on}}" onClick="{{p.pick}}">{{p.name}}</button>
+      </sc-for>
+    </div>
+    <div style="background: #14161B; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px;">
+      <span class="muted" style="font-size: 13px;">{{splitLabel}}</span>
+      <span style="font-weight: 700;">{{efPreview}}</span>
+    </div>
+    <button class="btn primary" disabled="{{efDisabled}}" onClick="{{saveExp}}">Speichern</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ============ TOAST ============ -->
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; left: 16px; right: 16px; bottom: 100px; z-index: 40; background: #F1EFEA; color: #14161B; border-radius: 16px; padding: 10px 10px 10px 16px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.35);" role="status">
+  <span style="flex: 1;">{{toast}}</span>
+  <sc-if value="{{toastUndo}}" hint-placeholder-val="{{false}}">
+    <button class="textbtn" style="color: #8A5A0F;" onClick="{{undo}}">Rückgängig</button>
+  </sc-if>
+</div>
+</sc-if>
+
+</div>
+</template>
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="runtime.js"></script>
+<script>
+var RATE = 25;
+var MEMBERS = [
+  { id: 'm1', name: 'Niklas', full: 'Niklas Rücker', role: '2. Vorsitzender', roleShort: '2. Vorsitz' },
+  { id: 'm2', name: 'Luca M.', full: 'Luca Michels', role: '1. Vorsitzender', roleShort: '1. Vorsitz' },
+  { id: 'm3', name: 'Oliver', full: 'Oliver Koch', role: 'Kassenwart', roleShort: 'Kasse' },
+  { id: 'm4', name: 'Marvin', full: 'Marvin Schweins', role: 'Schriftführer', roleShort: 'Schriftführer' },
+  { id: 'm5', name: 'Nils', full: 'Nils Müller', role: 'Spaßwart, Schanzenbeauftragter', roleShort: 'Spaßwart' },
+  { id: 'm6', name: 'Luca S.', full: 'Luca Sprenger', role: 'Spaßwart, Strafenbeauftragter', roleShort: 'Strafen' },
+  { id: 'm7', name: 'Felix', full: 'Felix Böing', role: 'Strafenbeauftragter', roleShort: 'Strafen' },
+  { id: 'm8', name: 'Luis', full: 'Luis Althaus', role: 'Einschenker', roleShort: 'Einschenker' },
+  { id: 'm9', name: 'Matthias', full: 'Matthias Hönig', role: '', roleShort: '' },
+  { id: 'm10', name: 'Julian', full: 'Julian Müller', role: '', roleShort: '' },
+  { id: 'm11', name: 'Davin', full: 'Davin Steinhauer', role: '', roleShort: '' }
+];
+var COLORS = ['#E8A33D', '#7FB7EC', '#86CC94', '#EE9A90', '#C3B1E6', '#6FCBC0', '#F2A0C4', '#F3C77A', '#A9D18E', '#F0B48A', '#9FC3E8'];
+var GROUP = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11'];
+var CATS = ['Pünktlichkeit & Teilnahme', 'Auf der Bahn', 'Verhalten & Regeln', 'Eigene'];
+var RIGHTS = [
+  ['fines', 'Strafen erfassen'], ['seeAllFines', 'Strafen aller Mitglieder sehen'], ['seeReasons', 'Abmeldegründe der anderen sehen'],
+  ['editFines', 'Strafen löschen oder korrigieren'], ['markPaid', 'Strafen als bezahlt markieren'], ['editRules', 'Strafregeln verwalten'],
+  ['attendance', 'Anwesenheit bestätigen'], ['expenses', 'Ausgaben erfassen'],
+  ['seeKonto', 'Kontostand des Vereins sehen'], ['kasse', 'Gaststätten-Zahlungen eintragen, Konto abgleichen']
+];
+// Ämter, die ein Recht unabhängig vom Schalter immer haben
+var ROLE_RIGHTS = { markPaid: ['Kassenwart', 'Strafenbeauftragt'] };
+var ROLE_NOTES = { markPaid: 'Kassenwart und Strafenbeauftragte dürfen das immer' };
+var CARDS = [
+  { k: 'Duell', t: '{a} gegen {b}: Schere, Stein, Papier. Wer verliert, trinkt zwei Schlucke.', alt: '{a} gegen {b}: Schere, Stein, Papier. Wer verliert, macht zehn Kniebeugen.' },
+  { k: 'Abstimmung', t: 'Wer würde eher bei der Kegeltour den Bus verpassen? Auf drei zeigen alle. Wer die meisten Stimmen hat, trinkt.', alt: 'Wer würde eher bei der Kegeltour den Bus verpassen? Auf drei zeigen alle. Wer die meisten Stimmen hat, erzählt die peinlichste Vereinsgeschichte.' },
+  { k: 'Regel', t: '{a} stellt eine Regel auf, die bis zur übernächsten Karte gilt. Wer sie bricht, trinkt.', alt: '{a} stellt eine Regel auf, die bis zur übernächsten Karte gilt. Wer sie bricht, zahlt 0,20 € in die Kasse.' },
+  { k: 'Aufgabe', t: '{a}, nenne in zehn Sekunden fünf Biersorten – oder trink drei Schlucke.', alt: '{a}, nenne in zehn Sekunden fünf Kegelbegriffe – oder sing einen Refrain deiner Wahl.' },
+  { k: 'Alle', t: 'Alle, die heute schon einen Pudel geworfen haben, trinken.', alt: 'Alle, die heute schon einen Pudel geworfen haben, stehen auf und verbeugen sich.' },
+  { k: 'Ich hab noch nie', t: 'Ich hab noch nie an einem Abend mehr als 5 € Strafe gesammelt. Wer doch, trinkt.', alt: 'Ich hab noch nie an einem Abend mehr als 5 € Strafe gesammelt. Wer doch, steht kurz auf.' },
+  { k: 'Tausch', t: '{a} und {b} tauschen bis zur nächsten Karte die Plätze und die Getränke.', alt: '{a} und {b} tauschen bis zur nächsten Karte die Plätze.' }
+];
+function fmt(n) {
+  var v = Math.round(Math.abs(n) * 100) / 100;
+  var s = v.toFixed(2).split('.');
+  s[0] = s[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (n < -0.004 ? '−' : '') + s[0] + ',' + s[1] + ' €';
+}
+function fmtCZK(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' CZK'; }
+var WD = ['SO', 'MO', 'DI', 'MI', 'DO', 'FR', 'SA'];
+var WDS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+var WDLONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function parseISO(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null; }
+function toISO(d) { return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); }
+function addDays(d, n) { return new Date(d.getTime() + n * 864e5); }
+function dLabel(d) { return WDS[d.getUTCDay()] + ', ' + pad(d.getUTCDate()) + '.' + pad(d.getUTCMonth() + 1) + '.'; }
+function dLabelY(d) { return dLabel(d) + d.getUTCFullYear(); }
+function dim(y, m) { return new Date(Date.UTC(y, m + 1, 0)).getUTCDate(); }
+function nthWd(y, m, wd, n) {
+  if (n >= 5) { var last = new Date(Date.UTC(y, m, dim(y, m))); return addDays(last, -((last.getUTCDay() - wd + 7) % 7)); }
+  var first = new Date(Date.UTC(y, m, 1)); return new Date(Date.UTC(y, m, 1 + (wd - first.getUTCDay() + 7) % 7 + (n - 1) * 7));
+}
+function genDates(f) {
+  var s = parseISO(f.date); if (!s) return [];
+  if (f.freq === 'once') return [s];
+  var end = f.endMode === 'date' ? parseISO(f.until) : null;
+  var max = f.endMode === 'count' ? f.count : 52, iv = f.interval, out = [];
+  var y0 = s.getUTCFullYear(), m0 = s.getUTCMonth(), dd = s.getUTCDate(), wd = s.getUTCDay(), nth = Math.ceil(dd / 7);
+  for (var i = 0; out.length < max && i < 200; i++) {
+    var d;
+    if (f.freq === 'week') d = addDays(s, i * 7 * iv);
+    else if (f.freq === 'month') { var mm = m0 + i * iv, y = y0 + Math.floor(mm / 12); mm = mm % 12;
+      d = f.monthMode === 'nth' ? nthWd(y, mm, wd, nth) : new Date(Date.UTC(y, mm, Math.min(dd, dim(y, mm)))); }
+    else { var yy = y0 + i * iv; d = new Date(Date.UTC(yy, m0, Math.min(dd, dim(yy, m0)))); }
+    if (end && d > end) break;
+    out.push(d);
+  }
+  return out;
+}
+function mkDeadline(d, time, h) { if (!h) return 'Keine Abmeldefrist'; return 'Abmeldung bis ' + dLabel(addDays(d, -h / 24)) + ', ' + time + ' Uhr (' + h + ' h vorher)'; }
+function parseAmt(s) { var v = parseFloat(String(s || '').replace(',', '.')); return isNaN(v) ? 0 : v; }
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      screen: 'welcome', tab: 'start', me: 'm1', clubName: 'Bahnbrecher', adminPin: '1234',
+      login: { email: 'bahnbrecher@beispiel.de', pw: 'kegeln2026' },
+      reg: { name: '', ort: '', email: '', pw: '', pin: '' },
+      rules: [
+        { id: 's1', name: 'Unabgemeldet', amount: 15, cat: 'Pünktlichkeit & Teilnahme', def: 'Abwesenheit ohne oder mit zu später Abmeldung (< 24 h) oder unzureichender Grund', adopted: true, active: true },
+        { id: 's2', name: 'Zu spät', amount: 5, cat: 'Pünktlichkeit & Teilnahme', def: 'Ohne Ankündigung nach 19:05 Uhr angekommen', adopted: true, active: true },
+        { id: 's3', name: 'Kegelshirt', amount: 20, cat: 'Pünktlichkeit & Teilnahme', def: 'Das Kegelshirt nicht getragen', adopted: true, active: true },
+        { id: 's4', name: 'Aus Bahn werfen', amount: 5, cat: 'Auf der Bahn', def: 'Kugel verlässt die Bahn', adopted: true, active: true },
+        { id: 's5', name: 'Band berühren', amount: 1, cat: 'Auf der Bahn', def: 'Berührung des Bandes mit Körper oder Kugel', adopted: true, active: true },
+        { id: 's6', name: 'Kugel rollt zurück', amount: 5, cat: 'Auf der Bahn', def: 'Kugel rollt eigenständig zurück über die Bahn', adopted: true, active: true },
+        { id: 's7', name: 'Kugel rollt durch', amount: 1, cat: 'Auf der Bahn', def: 'Kugel läuft ohne Treffer durch, alle anderen zahlen', others: true, adopted: true, active: true },
+        { id: 's8', name: 'Kugel wird eingeholt', amount: 2, cat: 'Auf der Bahn', def: 'Gelingt es, zahlt der Werfer der langsamen Kugel, sonst der der zweiten', adopted: true, active: true },
+        { id: 's9', name: 'Kranz', amount: 5, cat: 'Auf der Bahn', def: 'Nur der Kegel in der Mitte bleibt stehen', adopted: true, active: true },
+        { id: 's10', name: 'Spiel verloren', amount: 2, cat: 'Auf der Bahn', def: 'Spiel wird von einer Person oder einem Team verloren', adopted: true, active: true },
+        { id: 's11', name: 'Lustwurf', amount: 5, cat: 'Auf der Bahn', def: 'Unnötiger oder nicht autorisierter Wurf (nur bei Spiel)', adopted: true, active: true },
+        { id: 's12', name: 'Alle Neune', amount: 1, cat: 'Auf der Bahn', def: 'Alle 9 Kegel abgeräumt, alle anderen zahlen', others: true, adopted: true, active: true },
+        { id: 's13', name: 'Handynutzung', amount: 5, cat: 'Verhalten & Regeln', def: 'Übermäßiges Beschäftigen mit dem Handy (nach Ermessen der Gruppe)', adopted: true, active: true },
+        { id: 's14', name: 'Nicht trinken', amount: 10, cat: 'Verhalten & Regeln', def: 'Nur nichtalkoholische Getränke (Ausnahme vorab schriftlich bei einem Strafenbeauftragten)', adopted: true, active: true },
+        { id: 's15', name: 'Alkohol verdunstet', amount: 2, cat: 'Verhalten & Regeln', def: 'Zu langsames Trinken (nach Ermessen der Gruppe)', adopted: true, active: true },
+        { id: 's16', name: 'Getränk umschmeißen', amount: 5, cat: 'Verhalten & Regeln', def: 'Ein Getränk wird umgeworfen – egal wessen', adopted: true, active: true },
+        { id: 's17', name: 'Rauchen beim Kegeln', amount: 20, cat: 'Verhalten & Regeln', def: 'Zigarette auf der Bahn', adopted: true, active: true },
+        { id: 's18', name: 'Geburtstag', amount: 0, cat: 'Verhalten & Regeln', def: 'Wer am Kegelabend Geburtstag hat, gibt eine Runde aus', round: true, adopted: true, active: true },
+        { id: 's19', name: 'Gastkegler', amount: 10, cat: 'Verhalten & Regeln', def: 'Gäste zahlen symbolisch für die Teilnahme', adopted: true, active: true },
+        { id: 'k1', name: 'Pudel (Rinne)', amount: 0.5, cat: 'Auf der Bahn', def: 'Kugel landet in der Rinne', adopted: false, active: false },
+        { id: 'k2', name: 'Übertreten', amount: 0.5, cat: 'Auf der Bahn', def: 'Beim Wurf über die Linie getreten', adopted: false, active: false },
+        { id: 'k3', name: 'Wurf verpasst', amount: 1, cat: 'Verhalten & Regeln', def: 'Nicht da, wenn man an der Reihe ist', adopted: false, active: false }
+      ],
+      fines: [
+        { id: 'f1', mid: 'm2', rid: 's5', name: 'Band berühren', amount: 1, date: '09.10.', paid: false },
+        { id: 'f2', mid: 'm4', rid: 's2', name: 'Zu spät', amount: 5, date: '09.10.', paid: false },
+        { id: 'f3', mid: 'm10', rid: 's13', name: 'Handynutzung', amount: 5, date: '09.10.', paid: false },
+        { id: 'f4', mid: 'm11', rid: 's16', name: 'Getränk umschmeißen', amount: 5, date: '09.10.', paid: false },
+        { id: 'f5', mid: 'm1', rid: 's5', name: 'Band berühren', amount: 1, date: '09.10.', paid: false },
+        { id: 'f6', mid: 'm9', rid: 's15', name: 'Alkohol verdunstet', amount: 2, date: '09.10.', paid: false },
+        { id: 'f7', mid: 'm8', rid: 's1', name: 'Unabgemeldet', amount: 15, date: '11.09.', paid: true },
+        { id: 'f8', mid: 'm7', rid: 's10', name: 'Spiel verloren', amount: 2, date: '09.10.', paid: false },
+        { id: 'f9', mid: 'm3', rid: 's4', name: 'Aus Bahn werfen', amount: 5, date: '09.10.', paid: false },
+        { id: 'f10', mid: 'm2', rid: 's9', name: 'Kranz', amount: 5, date: '11.09.', paid: false },
+        { id: 'f11', mid: 'm10', rid: 's2', name: 'Zu spät', amount: 5, date: '11.09.', paid: false },
+        { id: 'f12', mid: 'm1', rid: 's15', name: 'Alkohol verdunstet', amount: 2, date: '11.09.', paid: false },
+        { id: 'f13', mid: 'm10', rid: 's3', name: 'Kegelshirt', amount: 20, date: '14.08.', paid: false },
+        { id: 'f14', mid: 'm11', rid: 's11', name: 'Lustwurf', amount: 5, date: '14.08.', paid: false },
+        { id: 'f15', mid: 'm5', rid: 's6', name: 'Kugel rollt zurück', amount: 5, date: '14.08.', paid: true }
+      ],
+      sel: [], strafView: 'erfassen', lastBatch: [], toast: '', toastUndo: false,
+      events: [
+        { id: 'e1', iso: '2026-11-06', wd: 'FR', day: '06', label: 'Fr, 06.11.', time: '19:00', title: 'Kegelabend', place: 'Zur Schanze, Büren', deadline: 'Abmeldung bis Do, 05.11., 19:00 Uhr (24 h vorher), sonst 15,00 € „Unabgemeldet“',
+          rsvp: { m2: { s: 'yes' }, m3: { s: 'yes' }, m4: { s: 'no', reason: 'Arbeit' }, m5: { s: 'yes' }, m6: { s: 'yes' }, m7: { s: 'no', reason: 'Urlaub' }, m8: { s: 'yes' }, m9: { s: 'yes' }, m11: { s: 'yes' } }, att: {} },
+        { id: 'e2', iso: '2026-12-04', wd: 'FR', day: '04', label: 'Fr, 04.12.', time: '19:00', title: 'Kegelabend', place: 'Zur Schanze, Büren', deadline: 'Abmeldung bis Do, 03.12., 19:00 Uhr (24 h vorher)',
+          rsvp: { m2: { s: 'yes' }, m5: { s: 'yes' }, m9: { s: 'no', reason: 'Familie' } }, att: {} },
+        { id: 'e3', iso: '2027-01-01', wd: 'FR', day: '01', label: 'Fr, 01.01.', time: '19:00', title: 'Kegelabend', place: 'Zur Schanze, Büren', deadline: 'Abmeldung bis Do, 31.12., 19:00 Uhr (24 h vorher)',
+          rsvp: {}, att: {} }
+      ],
+      openEvent: null, absage: null, free: null, evForm: null, evFrom: 'termine',
+      overlay: null, pin: '', pinErr: false, admin: false,
+      memberPins: { m2: '1111', m3: '1111', m4: '1111', m5: '1111', m6: '1111', m7: '1111', m8: '1111' }, mpin: null,
+      rights: { fines: true, seeAllFines: true, seeReasons: true, editFines: false, markPaid: false, editRules: false, attendance: false, expenses: true, seeKonto: true, kasse: false },
+      beitragStd: '15', beitragInd: {},
+      anchor: { date: '01.08.2026', key: '0801', amount: 1180, months: 3 },
+      gastro: [
+        { id: 'g3', date: '09.10.', amount: '168,00' },
+        { id: 'g2', date: '11.09.', amount: '142,50' },
+        { id: 'g1', date: '14.08.', amount: '155,00' }
+      ],
+      kasseView: 'konto', kasseOpen: null, abgleich: null,
+      newRule: { name: '', amount: '' },
+      party: { idx: 0, alcFree: false }, wheel: '?',
+      players: MEMBERS.map(m => m.id), guests: [], guestName: '',
+      exp: [
+        { id: 'x1', desc: 'Unterkunft (4 Tage)', amount: 1650, cur: 'EUR', payer: 'm5', among: GROUP.slice() },
+        { id: 'x2', desc: 'Bahntickets', amount: 990, cur: 'EUR', payer: 'm6', among: GROUP.slice() },
+        { id: 'x3', desc: 'Abend im Bierlokal', amount: 8250, cur: 'CZK', payer: 'm1', among: GROUP.slice() },
+        { id: 'x4', desc: 'Taxi zum Hotel', amount: 900, cur: 'CZK', payer: 'm4', among: ['m1', 'm4', 'm9'] }
+      ],
+      expForm: null, settled: {}
+    };
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+  showToast(msg, undo) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg, toastUndo: !!undo });
+    this._t = setTimeout(() => this.setState({ toast: '', toastUndo: false }), 4000);
+  }
+  rsvp(eid, s, reason) {
+    this.setState(st => ({ events: st.events.map(e => e.id !== eid ? e : Object.assign({}, e, { rsvp: Object.assign({}, e.rsvp, { [st.me]: { s: s, reason: reason || '' } }) })) }));
+  }
+  setAtt(eid, mid, v) {
+    this.setState(st => ({ events: st.events.map(e => {
+      if (e.id !== eid) return e;
+      var cur = (e.att || {})[mid] || '';
+      return Object.assign({}, e, { att: Object.assign({}, e.att, { [mid]: cur === v ? '' : v }) });
+    }) }));
+  }
+  bookFines(name, amount, rid, others, round) {
+    var st = this.state;
+    if (!st.sel.length) { this.showToast('Erst ein Mitglied antippen'); return; }
+    var ts = Date.now();
+    var names = st.sel.map(id => MEMBERS.find(m => m.id === id).name).join(', ');
+    var payers = others ? MEMBERS.map(m => m.id).filter(id => st.sel.indexOf(id) < 0) : st.sel;
+    var nf = payers.map((mid, i) => ({ id: 'f' + ts + '_' + i, mid: mid, rid: rid, name: others ? name + ' von ' + names : name, amount: amount, round: !!round, date: 'heute', paid: false }));
+    this.setState({ fines: st.fines.concat(nf), sel: [], lastBatch: nf.map(f => f.id), free: null });
+    var msg = round ? names + ' gibt eine Runde aus' : others ? name + ' von ' + names + ' · ' + nf.length + ' andere zahlen je ' + fmt(amount) : name + ' · ' + names + ' · ' + fmt(amount * nf.length);
+    this.showToast(msg, true);
+  }
+  field(key, sub) {
+    return (e) => { var v = e.target.value; this.setState(st => ({ [key]: Object.assign({}, st[key], { [sub]: v }) })); };
+  }
+  renderVals() {
+    var st = this.state;
+    var set = (p) => this.setState(p);
+    var meRole = (MEMBERS.find(x => x.id === st.me) || {}).role || '';
+    var can = (k) => st.admin || !!st.rights[k] || (ROLE_RIGHTS[k] || []).some(x => meRole.indexOf(x) >= 0);
+    var mem = MEMBERS.map((m, i) => Object.assign({}, m, { color: COLORS[i], initial: m.full.split(' ').map(w => w.charAt(0)).join(''),
+      pinHint: st.memberPins[m.id] ? '' : 'Erstanmeldung',
+      pick: () => set({ screen: 'mpin', mpin: { mid: m.id, step: this.state.memberPins[m.id] ? 'enter' : 'new', val: '', first: '', err: '' } }) }));
+    var byId = {}; mem.forEach(m => { byId[m.id] = m; });
+    var me = byId[st.me];
+
+    var scr = { welcome: st.screen === 'welcome', login: st.screen === 'login', register: st.screen === 'register', profile: st.screen === 'profile', app: st.screen === 'app', mpin: st.screen === 'mpin' && !!st.mpin };
+    var keysT = ['start', 'strafen', 'termine', 'spiele', 'ausgaben'];
+    var t = {}, tc = {}, goTab = {};
+    keysT.forEach(k => { t[k] = st.tab === k; tc[k] = st.tab === k ? '#E8A33D' : '#A3A8B2'; goTab[k] = () => set({ tab: k, overlay: null }); });
+    var titles = { start: 'Start', strafen: 'Strafen', termine: 'Termine', spiele: 'Spiele', ausgaben: 'Ausgaben' };
+
+    // Termine
+    var evs = st.events.map(e => {
+      var y = 0, n = 0, o = 0;
+      mem.forEach(m => { var s = (e.rsvp[m.id] || {}).s || 'open'; if (s === 'yes') y++; else if (s === 'no') n++; else o++; });
+      var my = e.rsvp[st.me] || { s: 'open' };
+      return Object.assign({}, e, {
+        nYes: y, nNo: n, nOpen: o, myYes: my.s === 'yes', notYes: my.s !== 'yes', myNo: my.s === 'no', myOpen: my.s === 'open', myReason: my.reason || '',
+        badge: my.s === 'yes' ? 'Zugesagt' : my.s === 'no' ? 'Abgesagt' : 'Offen',
+        badgeBg: my.s === 'yes' ? '#22402D' : my.s === 'no' ? '#4A2622' : '#3B3322',
+        badgeFg: my.s === 'yes' ? '#93DAAA' : my.s === 'no' ? '#F6AFA5' : '#F3C77A',
+        detail: () => set({ openEvent: e.id }),
+        yes: () => { this.rsvp(e.id, 'yes'); this.showToast('Zugesagt für ' + e.label); },
+        no: () => set({ absage: { eid: e.id, text: '' } })
+      });
+    });
+    var next = evs[0];
+
+    var seeR = can('seeReasons');
+    var oe = evs.find(e => e.id === st.openEvent) || evs[0];
+    var yesL = [], noL = [], openL = [];
+    mem.forEach(m => {
+      var x = oe.rsvp[m.id] || { s: 'open' };
+      var item = Object.assign({}, m, { nameLabel: m.id === st.me ? m.name + ' (du)' : m.name,
+        reason: (seeR || m.id === st.me) ? (x.reason || '–') : 'abgesagt' });
+      (x.s === 'yes' ? yesL : x.s === 'no' ? noL : openL).push(item);
+    });
+    var att = oe.att || {};
+    var nDa = 0;
+    var attL = mem.map(m => {
+      var a = att[m.id] || ''; if (a === 'da') nDa++;
+      return Object.assign({}, m, { isDa: a === 'da', isFe: a === 'fehlt',
+        daBg: a === 'da' ? '#86CC94' : 'transparent', daFg: a === 'da' ? '#0F2416' : '#F1EFEA', daBd: a === 'da' ? '#86CC94' : 'rgba(255,255,255,.18)',
+        feBg: a === 'fehlt' ? '#EE9A90' : 'transparent', feFg: a === 'fehlt' ? '#2B0F0B' : '#F1EFEA', feBd: a === 'fehlt' ? '#EE9A90' : 'rgba(255,255,255,.18)',
+        da: () => this.setAtt(oe.id, m.id, 'da'), fehlt: () => this.setAtt(oe.id, m.id, 'fehlt') });
+    });
+    var evd = Object.assign({}, oe, { yesL: yesL, noL: noL, openL: openL, attL: attL, showAtt: can('attendance'), hideReasons: !seeR,
+      attCount: nDa + ' von ' + mem.length + ' als anwesend markiert.' });
+
+    // Absage
+    var ab = st.absage;
+    var reasons = ['Urlaub', 'Arbeit', 'Krankheit', 'Familie', 'Sonstiges'].map(rn => {
+      var on = !!ab && ab.reason === rn;
+      return { label: rn, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA', bd: on ? '#E8A33D' : 'rgba(255,255,255,.18)',
+        pick: () => set({ absage: Object.assign({}, this.state.absage, { reason: rn }) }) };
+    });
+    var abSonst = false;
+    var abOk = !!ab && ab.text.trim().length > 0;
+    var abEv = ab ? st.events.find(e => e.id === ab.eid) : null;
+
+    // Strafen
+    var amtL = (r) => r.round ? 'Runde' : r.others ? fmt(r.amount) + ' · alle anderen' : fmt(r.amount);
+    var rulesActive = st.rules.filter(r => r.adopted && r.active).map(r => Object.assign({}, r, { amountLabel: amtL(r), tap: () => this.bookFines(r.name, r.amount, r.id, r.others, r.round) }));
+    var ruleGroups = CATS.map(cat => ({ cat: cat, items: rulesActive.filter(r => r.cat === cat) })).filter(g => g.items.length > 0);
+    var officers = mem.filter(m => m.role);
+    var grid = mem.map(m => { var on = st.sel.indexOf(m.id) >= 0;
+      return Object.assign({}, m, { on: on, bd: on ? '#E8A33D' : 'transparent', bg: on ? '#33291A' : '#1E2128',
+        toggle: () => set({ sel: on ? this.state.sel.filter(x => x !== m.id) : this.state.sel.concat([m.id]) }) }); });
+    var selCount = st.sel.length;
+    var recent = st.fines.slice().reverse().slice(0, 6).map(f => Object.assign({}, f, { who: byId[f.mid].name, color: byId[f.mid].color, initial: byId[f.mid].initial,
+      amountLabel: f.round ? 'Runde' : fmt(f.amount), canDel: can('editFines'), del: () => set({ fines: this.state.fines.filter(x => x.id !== f.id) }) }));
+    var sumsAll = mem.map(m => {
+      var fs = st.fines.filter(f => f.mid === m.id);
+      var open = fs.filter(f => !f.paid).reduce((a, f) => a + f.amount, 0);
+      return Object.assign({}, m, { open: open, openLabel: fmt(open), countLabel: fs.length + (fs.length === 1 ? ' Strafe' : ' Strafen'),
+        pudel: fs.filter(f => f.rid === 'r1').length, canPay: can('markPaid') && open > 0, nameLabel: m.id === st.me ? m.name + ' (du)' : m.name,
+        pay: () => { set({ fines: this.state.fines.map(f => f.mid === m.id ? Object.assign({}, f, { paid: true, paidOn: f.paid ? f.paidOn : 'heute' }) : f) }); this.showToast(m.name + ': ' + fmt(open) + ' als bezahlt markiert'); } });
+    });
+    var sums = sumsAll.filter(x => can('seeAllFines') || x.id === st.me).sort((a, b) => b.open - a.open);
+    var totalOpen = st.fines.filter(f => !f.paid).reduce((a, f) => a + f.amount, 0);
+    var totalPaid = st.fines.filter(f => f.paid).reduce((a, f) => a + f.amount, 0);
+    var myOpen = st.fines.filter(f => !f.paid && f.mid === st.me).reduce((a, f) => a + f.amount, 0);
+    var segOn = { bg: '#E8A33D', fg: '#1A1408' }, segOff = { bg: 'transparent', fg: '#F1EFEA' };
+    var fr = st.free;
+    var freeA = fr ? parseAmt(fr.amount) : 0;
+
+    // Spiele
+    var pl = mem.filter(m => st.players.indexOf(m.id) >= 0).map(m => ({ name: m.name })).concat(st.guests.map(g => ({ name: g })));
+    var plN = pl.length;
+    var playerChips = mem.map(m => { var on = st.players.indexOf(m.id) >= 0;
+      return { label: m.name, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA', bd: on ? '#E8A33D' : 'rgba(255,255,255,.18)',
+        toggle: () => { var cur = this.state.players; set({ players: cur.indexOf(m.id) >= 0 ? cur.filter(x => x !== m.id) : cur.concat([m.id]) }); } }; })
+      .concat(st.guests.map(g => ({ label: g + ' (Gast) ×', on: true, bg: '#2E3A4D', fg: '#F1EFEA', bd: '#7FB7EC',
+        toggle: () => set({ guests: this.state.guests.filter(x => x !== g) }) })));
+    var p = st.party;
+    var c = CARDS[p.idx % CARDS.length];
+    var safe = plN ? pl : [{ name: '?' }];
+    var ia = (p.idx * 7 + 1) % safe.length, ib = (p.idx * 11 + 2) % safe.length;
+    if (ia === ib) ib = (ia + 1) % safe.length;
+    var a = safe[ia], b = safe[ib];
+    var ptext = (p.alcFree ? c.alt : c.t).replace('{a}', a.name).replace('{b}', b.name);
+
+    // Ausgaben
+    var eur = x => x.cur === 'CZK' ? x.amount / RATE : x.amount;
+    var bal = {}; GROUP.forEach(g => { bal[g] = 0; });
+    var total = 0;
+    st.exp.forEach(x => { var v = eur(x); total += v; bal[x.payer] += v; var sh = v / x.among.length; x.among.forEach(q => { bal[q] -= sh; }); });
+    var cr = GROUP.filter(g => bal[g] > 0.005).map(g => ({ id: g, v: bal[g] })).sort((x, y) => y.v - x.v);
+    var db = GROUP.filter(g => bal[g] < -0.005).map(g => ({ id: g, v: -bal[g] })).sort((x, y) => y.v - x.v);
+    var tr = [], i = 0, j = 0;
+    while (i < db.length && j < cr.length) {
+      var v = Math.min(db[i].v, cr[j].v);
+      tr.push({ from: db[i].id, to: cr[j].id, v: v });
+      db[i].v -= v; cr[j].v -= v;
+      if (db[i].v < 0.005) i++;
+      if (cr[j].v < 0.005) j++;
+    }
+    var pairs = {};
+    st.exp.forEach(x => x.among.forEach(q => { if (q !== x.payer) pairs[q + '>' + x.payer] = 1; }));
+    var rawCount = Object.keys(pairs).length;
+    var transfers = tr.map(x => {
+      var key = x.from + '>' + x.to + ':' + x.v.toFixed(2); var done = !!st.settled[key];
+      return { fromName: byId[x.from].name, toName: byId[x.to].name, amountLabel: fmt(x.v), done: done,
+        label: done ? 'Erledigt' : 'Als bezahlt markieren', deco: done ? 'line-through' : 'none',
+        bg: done ? '#86CC94' : 'transparent', fg: done ? '#0F2416' : '#F1EFEA', bd: done ? '#86CC94' : 'rgba(255,255,255,.18)',
+        toggle: () => set({ settled: Object.assign({}, this.state.settled, { [key]: !done }) }) };
+    });
+    var balances = GROUP.map(g => { var bv = bal[g];
+      return Object.assign({}, byId[g], { nameLabel: g === st.me ? byId[g].name + ' (du)' : byId[g].name,
+        label: (bv > 0.005 ? '+' : '') + fmt(bv), fg: bv > 0.005 ? '#93DAAA' : bv < -0.005 ? '#F6AFA5' : '#A3A8B2',
+        sub: bv > 0.005 ? 'bekommt' : bv < -0.005 ? 'schuldet' : 'ausgeglichen' }); });
+    var expList = st.exp.slice().reverse().map(x => Object.assign({}, x, { payerName: byId[x.payer].name,
+      orig: x.cur === 'CZK' ? fmtCZK(x.amount) : fmt(x.amount), conv: '= ' + fmt(eur(x)), isForeign: x.cur !== 'EUR',
+      amongLabel: x.among.length === GROUP.length ? 'alle ' + GROUP.length : x.among.map(id => byId[id].name).join(', ') }));
+    var inGroup = GROUP.indexOf(st.me) >= 0;
+    var mb = inGroup ? bal[st.me] : 0;
+    var myBalLabel = !inGroup ? 'Du bist nicht in dieser Gruppe' : mb > 0.005 ? 'Du bekommst ' + fmt(mb) : mb < -0.005 ? 'Du schuldest ' + fmt(-mb) : 'Du bist ausgeglichen';
+    var myBalColor = mb > 0.005 ? '#93DAAA' : mb < -0.005 ? '#F6AFA5' : '#A3A8B2';
+
+    var ef = st.expForm || { desc: '', amount: '', cur: 'EUR', payer: st.me, among: GROUP.slice() };
+    var efA = parseAmt(ef.amount);
+    var efEur = ef.cur === 'CZK' ? efA / RATE : efA;
+    var nSplit = ef.among.length;
+    var efPreview = !(efA > 0) ? 'Betrag eingeben' : nSplit === 0 ? 'Mindestens eine Person auswählen'
+      : (ef.cur === 'CZK' ? fmtCZK(efA) + ' = ' + fmt(efEur) + ' · ' : '') + fmt(efEur / nSplit) + ' pro Person';
+    var splitLabel = nSplit === GROUP.length ? 'Gleichmäßig auf alle ' + GROUP.length + ' aufgeteilt'
+      : nSplit === 0 ? 'Noch niemand ausgewählt' : 'Gleichmäßig auf ' + nSplit + (nSplit === 1 ? ' Person' : ' Personen') + ' aufgeteilt';
+    var splitChips = GROUP.map(g => { var on = ef.among.indexOf(g) >= 0;
+      return { name: byId[g].name, on: on, bg: on ? '#2E3A4D' : 'transparent', fg: '#F1EFEA', bd: on ? '#7FB7EC' : 'rgba(255,255,255,.18)',
+        pick: () => { var cur = this.state.expForm.among;
+          set({ expForm: Object.assign({}, this.state.expForm, { among: cur.indexOf(g) >= 0 ? cur.filter(x => x !== g) : GROUP.filter(x => x === g || cur.indexOf(x) >= 0) }) }); } }; });
+    var efOk = !!(ef.desc.trim() && efA > 0 && nSplit > 0);
+    var curChips = ['EUR', 'CZK'].map(cu => { var on = ef.cur === cu;
+      return { label: cu, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA',
+        pick: () => set({ expForm: Object.assign({}, this.state.expForm, { cur: cu }) }) }; });
+    var payerChips = GROUP.map(g => { var on = ef.payer === g;
+      return { name: byId[g].name, on: on, bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA', bd: on ? '#E8A33D' : 'rgba(255,255,255,.18)',
+        pick: () => set({ expForm: Object.assign({}, this.state.expForm, { payer: g }) }) }; });
+
+    // Termin anlegen
+    var ef2 = st.evForm;
+    var evx = { rep: false, month: false, endCount: false, endDate: false, ivText: '', countText: '', weekText: '', summary: '' };
+    var evGen = [], evNewN = 0, freqChips = [], monthChips = [], endChips = [], fristChips = [], titleChips = [], evPrev = [], evMore = '';
+    var upd = (p) => set({ evForm: Object.assign({}, this.state.evForm, p) });
+    if (ef2) {
+      var chipOf = (on) => ({ bg: on ? '#E8A33D' : 'transparent', fg: on ? '#1A1408' : '#F1EFEA', bd: on ? '#E8A33D' : 'rgba(255,255,255,.18)' });
+      var chips = (list, cur, key) => list.map(x => Object.assign({ label: x[1], on: cur === x[0], pick: () => upd({ [key]: x[0] }) }, chipOf(cur === x[0])));
+      titleChips = ['Kegelabend', 'Kegelfahrt', 'Versammlung', 'Feier'].map(tn => Object.assign({ label: tn, on: ef2.title === tn, pick: () => upd({ title: tn }) }, chipOf(ef2.title === tn)));
+      freqChips = chips([['once', 'Einmalig'], ['week', 'Wöchentlich'], ['month', 'Monatlich'], ['year', 'Jährlich']], ef2.freq, 'freq');
+      endChips = chips([['count', 'Nach Anzahl'], ['date', 'Bis Datum']], ef2.endMode, 'endMode');
+      fristChips = chips([['24', '24 h vorher'], ['48', '48 h vorher'], ['0', 'Keine Frist']], ef2.frist, 'frist');
+      var sD = parseISO(ef2.date), iv = ef2.interval;
+      var wdLong = sD ? WDLONG[sD.getUTCDay()] : '';
+      var nthN = sD ? Math.ceil(sD.getUTCDate() / 7) : 1, nthL = nthN >= 5 ? 'letzten' : nthN + '.';
+      monthChips = chips([['nth', 'Am ' + nthL + ' ' + wdLong + ' im Monat'], ['dom', sD ? 'Am ' + pad(sD.getUTCDate()) + '. jedes Monats' : 'Gleicher Tag']], ef2.monthMode, 'monthMode');
+      var unit = { week: ['Woche', 'Wochen'], month: ['Monat', 'Monate'], year: ['Jahr', 'Jahre'] }[ef2.freq] || ['', ''];
+      var have = {}; st.events.forEach(e => { have[e.iso + ' ' + e.time] = true; });
+      evGen = genDates(ef2).map(d => ({ d: d, dup: !!have[toISO(d) + ' ' + ef2.time] }));
+      evNewN = evGen.filter(x => !x.dup).length;
+      evPrev = evGen.slice(0, 6).map(x => ({ label: dLabelY(x.d) + ', ' + ef2.time + ' Uhr', note: x.dup ? 'schon vorhanden' : '' }));
+      evMore = evGen.length > 6 ? '+ ' + (evGen.length - 6) + ' weitere bis ' + dLabelY(evGen[evGen.length - 1].d) : '';
+      var rh = !sD ? 'Bitte ein Datum wählen' :
+        ef2.freq === 'once' ? 'Einzeltermin am ' + dLabelY(sD) :
+        ef2.freq === 'week' ? (iv === 1 ? 'Jede Woche ' : 'Alle ' + iv + ' Wochen ') + wdLong.toLowerCase() + 's' :
+        ef2.freq === 'month' ? (iv === 1 ? 'Jeden Monat' : 'Alle ' + iv + ' Monate') + (ef2.monthMode === 'nth' ? ' am ' + nthL + ' ' + wdLong : ' am ' + pad(sD.getUTCDate()) + '.') :
+        (iv === 1 ? 'Jedes Jahr' : 'Alle ' + iv + ' Jahre') + ' am ' + pad(sD.getUTCDate()) + '.' + pad(sD.getUTCMonth() + 1) + '.';
+      if (sD) rh += ', ' + ef2.time + ' Uhr' + (ef2.freq !== 'once' && evGen.length ? ' · ' + evGen.length + ' Termine bis ' + dLabelY(evGen[evGen.length - 1].d) : '');
+      evx = { rep: ef2.freq !== 'once', month: ef2.freq === 'month', endCount: ef2.endMode === 'count', endDate: ef2.endMode === 'date',
+        ivText: iv + ' ' + (iv === 1 ? unit[0] : unit[1]), countText: ef2.count + (ef2.count === 1 ? ' Termin' : ' Terminen'),
+        weekText: ef2.freq === 'week' && wdLong ? 'immer ' + wdLong.toLowerCase() + 's' : ef2.freq === 'month' ? 'Tag im Monat unten wählen' : '', summary: rh };
+    }
+    var evOk = !!ef2 && !!ef2.title.trim() && !!ef2.place.trim() && /^\d{2}:\d{2}$/.test(ef2.time) && evNewN > 0;
+    var evDefault = (from) => { var evsS = this.state.events, lastEv = evsS[evsS.length - 1], lD = lastEv ? parseISO(lastEv.iso) : null;
+      return { overlay: 'evnew', evFrom: from, evForm: { title: 'Kegelabend', place: lastEv ? lastEv.place : '', date: lD ? toISO(addDays(lD, 28)) : '2026-10-16', time: lastEv ? lastEv.time : '19:00',
+        freq: 'once', interval: 4, monthMode: 'nth', endMode: 'count', count: 10, until: '2027-12-31', frist: '24' } }; };
+
+    // PIN
+    var pinLen = st.adminPin.length;
+    var pinDots = []; for (var d = 0; d < pinLen; d++) pinDots.push({ bg: d < st.pin.length ? '#E8A33D' : 'transparent' });
+    var press = (k) => {
+      var s = this.state;
+      if (k === 'del') { set({ pin: s.pin.slice(0, -1), pinErr: false }); return; }
+      var np = s.pin + k;
+      if (np.length < s.adminPin.length) { set({ pin: np, pinErr: false }); return; }
+      if (np === s.adminPin) { set({ pin: '', pinErr: false, admin: true, overlay: s.pinTarget || 'admin', pinTarget: null }); this.showToast('Admin-Modus aktiv'); }
+      else set({ pin: '', pinErr: true });
+    };
+    var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map(k => ({ label: k, isNum: k !== '' && k !== 'del', isBlank: k === '', isDel: k === 'del', press: () => press(k) }));
+
+    // Persönliche PIN je Mitglied
+    var mpS = st.mpin, mpM = mpS ? byId[mpS.mid] : null;
+    var mpinDots = []; for (var md = 0; md < 4; md++) mpinDots.push({ bg: mpS && md < mpS.val.length ? '#E8A33D' : 'transparent' });
+    var enterApp = (mid) => set({ me: mid, screen: 'app', tab: 'start', overlay: null, mpin: null, admin: false, sel: [] });
+    var mpress = (k) => {
+      var s = this.state, p = s.mpin; if (!p) return;
+      if (k === 'del') { set({ mpin: Object.assign({}, p, { val: p.val.slice(0, -1), err: '' }) }); return; }
+      var v = p.val + k;
+      if (v.length < 4) { set({ mpin: Object.assign({}, p, { val: v, err: '' }) }); return; }
+      var nm = byId[p.mid].name;
+      if (p.step === 'enter') {
+        if (v === s.memberPins[p.mid]) enterApp(p.mid);
+        else set({ mpin: Object.assign({}, p, { val: '', err: 'Falsche PIN – bitte erneut versuchen' }) });
+        return;
+      }
+      if (p.step === 'new') { set({ mpin: Object.assign({}, p, { step: 'confirm', first: v, val: '', err: '' }) }); return; }
+      if (v === p.first) { set({ memberPins: Object.assign({}, s.memberPins, { [p.mid]: v }) }); enterApp(p.mid); this.showToast('PIN gespeichert – willkommen, ' + nm); }
+      else set({ mpin: Object.assign({}, p, { step: 'new', first: '', val: '', err: 'Die PINs stimmen nicht überein – bitte neu festlegen' }) });
+    };
+    var mkeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'].map(k => ({ label: k, isNum: k !== '' && k !== 'del', isBlank: k === '', isDel: k === 'del', press: () => mpress(k) }));
+    var mp = mpM ? {
+      color: mpM.color, initial: mpM.initial,
+      title: mpS.step === 'enter' ? 'Hallo ' + mpM.name : mpS.step === 'new' ? 'PIN festlegen' : 'PIN wiederholen',
+      sub: mpS.step === 'enter' ? 'Gib deine persönliche PIN ein.' : mpS.step === 'new' ? 'Erste Anmeldung: Wähle eine 4-stellige PIN. Nur du solltest sie kennen.' : 'Gib die PIN zur Bestätigung noch einmal ein.',
+      msg: mpS.err || (mpS.step === 'enter' && st.memberPins[mpS.mid] === '1111' ? 'Demo-PIN: 1111' : ''),
+      msgColor: mpS.err ? '#F6AFA5' : '#A3A8B2',
+      canForgot: mpS.step === 'enter'
+    } : { color: 'transparent', initial: '', title: '', sub: '', msg: '', msgColor: '#A3A8B2', canForgot: false };
+    var pinList = mem.map(m => { var has = !!st.memberPins[m.id]; return { full: m.full, color: m.color, initial: m.initial, has: has,
+      status: has ? 'PIN festgelegt' : 'Noch keine PIN – wird beim Anmelden festgelegt', statusColor: has ? '#A3A8B2' : '#E8A33D',
+      resetLabel: 'PIN von ' + m.full + ' zurücksetzen',
+      reset: () => { var np = Object.assign({}, this.state.memberPins); delete np[m.id]; set({ memberPins: np }); this.showToast('PIN von ' + m.name + ' zurückgesetzt'); } }; });
+    var pinSetN = MEMBERS.filter(m => !!st.memberPins[m.id]).length;
+
+    var rightsList = RIGHTS.map(r => { var on = !!st.rights[r[0]];
+      return { label: r[1], note: ROLE_NOTES[r[0]] || '', on: on, track: on ? '#E8A33D' : '#3A3F49', knob: on ? '23px' : '3px',
+        toggle: () => set({ rights: Object.assign({}, this.state.rights, { [r[0]]: !this.state.rights[r[0]] }) }) }; });
+    var rulesAll = st.rules.filter(r => r.adopted).map(r => Object.assign({}, r, { amountLabel: amtL(r), track: r.active ? '#E8A33D' : '#3A3F49', knob: r.active ? '23px' : '3px',
+      toggle: () => set({ rules: this.state.rules.map(x => x.id === r.id ? Object.assign({}, x, { active: !x.active }) : x) }) }));
+    var catalog = st.rules.filter(r => !r.adopted).map(r => Object.assign({}, r, { amountLabel: fmt(r.amount),
+      adopt: () => { set({ rules: this.state.rules.map(x => x.id === r.id ? Object.assign({}, x, { adopted: true, active: true }) : x) }); this.showToast(r.name + ' übernommen'); } }));
+    var nrA = parseAmt(st.newRule.amount);
+    var o = {}; ['verein', 'pin', 'pins', 'admin', 'rights', 'evnew', 'rules', 'catalog', 'party', 'wheel', 'kasse', 'beitraege'].forEach(k => { o[k] = st.overlay === k; });
+    var dKey = (dt) => dt === 'heute' ? '9999' : dt.slice(3, 5) + dt.slice(0, 2);
+    var kasseList = mem.filter(m => can('seeAllFines') || m.id === st.me).map(m => {
+      var fs = st.fines.filter(f => f.mid === m.id && !f.paid);
+      var open = fs.reduce((a, f) => a + f.amount, 0);
+      var dates = []; fs.forEach(f => { if (dates.indexOf(f.date) < 0) dates.push(f.date); });
+      dates.sort((x, y) => dKey(y).localeCompare(dKey(x)));
+      var groups = dates.map(dt => { var its = fs.filter(f => f.date === dt);
+        return { label: dt === 'heute' ? 'Kegelabend heute' : 'Kegelabend ' + dt + (dKey(dt) > '0800' ? '2026' : '2026'),
+          sumLabel: fmt(its.reduce((a, f) => a + f.amount, 0)),
+          items: its.map(f => ({ name: f.name, amountLabel: f.round ? 'Runde' : fmt(f.amount) })) }; });
+      var expanded = st.kasseOpen === m.id;
+      return Object.assign({}, m, { open: open, openLabel: fmt(open), fg: open > 0 ? '#F6AFA5' : '#A3A8B2',
+        nameLabel: m.id === st.me ? m.name + ' (du)' : m.name,
+        sub: fs.length === 0 ? 'alles bezahlt' : fs.length + (fs.length === 1 ? ' Strafe' : ' Strafen') + ' aus ' + dates.length + (dates.length === 1 ? ' Kegelabend' : ' Kegelabenden'),
+        groups: groups, none: fs.length === 0, expanded: expanded, chev: expanded ? '−' : '+',
+        canPay: can('markPaid') && open > 0,
+        pay: () => { set({ fines: this.state.fines.map(f => f.mid === m.id ? Object.assign({}, f, { paid: true, paidOn: f.paid ? f.paidOn : 'heute' }) : f) }); this.showToast(m.name + ': ' + fmt(open) + ' als bezahlt markiert'); },
+        toggle: () => set({ kasseOpen: this.state.kasseOpen === m.id ? null : m.id }) });
+    }).sort((x, y) => y.open - x.open);
+
+    // Vereinskonto
+    var std = parseAmt(st.beitragStd);
+    var beitragOf = (id) => { var v = st.beitragInd[id]; return (v !== undefined && String(v).trim() !== '') ? parseAmt(v) : std; };
+    var monthly = MEMBERS.reduce((a, m) => a + beitragOf(m.id), 0);
+    var nInd = MEMBERS.filter(m => st.beitragInd[m.id] !== undefined && String(st.beitragInd[m.id]).trim() !== '').length;
+    var an = st.anchor;
+    var beitragSum = monthly * an.months;
+    var paidF = st.fines.filter(f => f.paid && (f.paidOn === 'heute' || (f.paidOn !== 'alt' && dKey(f.date) >= an.key)));
+    var finesSum = paidF.reduce((a, f) => a + f.amount, 0);
+    var gastroIn = st.gastro.filter(g => dKey(g.date) >= an.key);
+    var gastroSum = gastroIn.reduce((a, g) => a + parseAmt(g.amount), 0);
+    var balance = an.amount + beitragSum + finesSum - gastroSum;
+    var canKasse = can('kasse');
+    var konto = {
+      balanceLabel: fmt(balance), balancePlain: balance.toFixed(2).replace('.', ','),
+      anchorDate: an.date, anchorLabel: fmt(an.amount),
+      beitragLabel: '+' + fmt(beitragSum), beitragSub: an.months + (an.months === 1 ? ' Monat' : ' Monate') + ' × ' + fmt(monthly),
+      finesLabel: '+' + fmt(finesSum), finesSub: paidF.length + (paidF.length === 1 ? ' Strafe' : ' Strafen') + ' seit Abgleich',
+      gastroLabel: fmt(-gastroSum), gastroSub: gastroIn.length + (gastroIn.length === 1 ? ' Kegelabend' : ' Kegelabende'),
+      monthlyLabel: fmt(monthly),
+      beitragInfo: 'Standard ' + fmt(std) + (nInd ? ' · ' + nInd + ' mit eigenem Betrag' : ' · alle zahlen den Standard')
+    };
+    var gastroList = st.gastro.slice().sort((x, y) => dKey(y.date).localeCompare(dKey(x.date))).map(g => ({
+      label: g.date === 'heute' ? 'Kegelabend heute' : 'Kegelabend ' + g.date + '2026', date: g.date, amount: g.amount,
+      amountLabel: g.amount ? fmt(parseAmt(g.amount)) : 'nicht eingetragen', editable: canKasse, readonly: !canKasse,
+      onAmt: (e) => { var v = e.target.value; this.setState(s2 => ({ gastro: s2.gastro.map(x => x.id === g.id ? Object.assign({}, x, { amount: v }) : x) })); } }));
+    var beitragList = mem.map(m => { var v = st.beitragInd[m.id]; var has = v !== undefined && String(v).trim() !== '';
+      return Object.assign({}, m, { value: has ? v : '', placeholder: st.beitragStd, amountLabel: fmt(beitragOf(m.id)), tag: has ? 'individuell' : 'Standard', tagColor: has ? '#E8A33D' : '#A3A8B2',
+        onChange: (e) => { var nv = e.target.value; this.setState(s2 => ({ beitragInd: Object.assign({}, s2.beitragInd, { [m.id]: nv }) })); } }); });
+    var abV = st.abgleich;
+    var abNum = abV !== null && String(abV).trim() !== '' && !isNaN(parseFloat(String(abV).replace(',', '.'))) ? parseAmt(abV) : null;
+    var abDiff = abNum === null ? 'Berechnet: ' + fmt(balance) : 'Abweichung zur Berechnung: ' + (abNum - balance > 0.004 ? '+' : '') + fmt(abNum - balance);
+    var kvKonto = st.kasseView === 'konto' && can('seeKonto');
+    var regOk = st.reg.name.trim() && st.reg.email.trim() && st.reg.pw && /^\d{4,6}$/.test(st.reg.pin);
+
+    return {
+      yes: true, scr: scr, t: t, tc: tc, goTab: goTab, title: titles[st.tab], admin: st.admin, me: me, mem: mem, clubName: st.clubName,
+      memberCount: mem.length,
+      goLogin: () => set({ screen: 'login' }), goRegister: () => set({ screen: 'register' }), goWelcome: () => set({ screen: 'welcome' }),
+      login: st.login, onLoginEmail: this.field('login', 'email'), onLoginPw: this.field('login', 'pw'),
+      doLogin: () => set({ screen: 'profile' }), forgot: () => this.showToast('Link zum Zurücksetzen an die Vereins-E-Mail gesendet'),
+      reg: st.reg, regName: this.field('reg', 'name'), regOrt: this.field('reg', 'ort'), regEmail: this.field('reg', 'email'), regPw: this.field('reg', 'pw'), regPin: this.field('reg', 'pin'),
+      regDisabled: !regOk, doRegister: () => { if (!regOk) return; set({ clubName: st.reg.name.trim(), adminPin: st.reg.pin, screen: 'profile' }); },
+
+      next: next, evs: evs, evd: evd, showEvent: !!st.openEvent, closeEvent: () => set({ openEvent: null }),
+      newEvent: () => set(evDefault('termine')), openEvAdmin: () => set(evDefault('admin')),
+      closeEvForm: () => set({ evForm: null, overlay: this.state.evFrom === 'admin' ? 'admin' : null }),
+      evf: ef2 || { title: '', place: '', date: '', time: '', until: '' }, evx: evx, titleChips: titleChips, freqChips: freqChips, monthChips: monthChips, endChips: endChips, fristChips: fristChips,
+      evPrev: evPrev, evMore: evMore, evDisabled: !evOk,
+      evSaveLabel: !ef2 ? '' : evNewN === 0 ? 'Keine neuen Termine' : evNewN === 1 ? 'Termin anlegen' : evNewN + ' Termine anlegen',
+      efTitle: this.field('evForm', 'title'), efPlace: this.field('evForm', 'place'), efDate: this.field('evForm', 'date'), efTime: this.field('evForm', 'time'), efUntil: this.field('evForm', 'until'),
+      ivMinus: () => upd({ interval: Math.max(1, this.state.evForm.interval - 1) }), ivPlus: () => upd({ interval: Math.min(52, this.state.evForm.interval + 1) }),
+      cntMinus: () => upd({ count: Math.max(2, this.state.evForm.count - 1) }), cntPlus: () => upd({ count: Math.min(52, this.state.evForm.count + 1) }),
+      saveEv: () => { if (!evOk) return; var f = this.state.evForm, ts = Date.now(), sid = f.freq === 'once' ? null : 'r' + ts;
+        var nev = evGen.filter(x => !x.dup).map((x, i) => ({ id: 'e' + ts + '_' + i, iso: toISO(x.d), wd: WD[x.d.getUTCDay()], day: pad(x.d.getUTCDate()), label: dLabel(x.d), time: f.time,
+          title: f.title.trim(), place: f.place.trim(), deadline: mkDeadline(x.d, f.time, parseInt(f.frist, 10) || 0), rsvp: {}, att: {}, series: sid }));
+        var all = this.state.events.concat(nev).sort((a, b) => (a.iso + a.time).localeCompare(b.iso + b.time));
+        var fromAdmin = this.state.evFrom === 'admin';
+        set({ events: all, evForm: null, overlay: fromAdmin ? 'admin' : null });
+        this.showToast(nev.length === 1 ? f.title.trim() + ' am ' + nev[0].label + ' angelegt' : nev.length + ' Termine angelegt'); },
+      showAbsage: !!ab, reasons: reasons, abSonst: abSonst, abText: ab ? ab.text : '', abDisabled: !abOk, abEvLabel: abEv ? abEv.label : '',
+      abVisibility: seeR ? 'Alle Mitglieder sehen deinen Grund.' : 'Nur der Admin sieht deinen Grund.',
+      onAbText: (e) => { var v = e.target.value; this.setState(s2 => ({ absage: Object.assign({}, s2.absage, { text: v }) })); },
+      cancelAbsage: () => set({ absage: null }),
+      sendAbsage: () => { if (!abOk) return; var r = ab.text.trim(); this.rsvp(ab.eid, 'no', r); set({ absage: null }); this.showToast('Abgesagt für ' + abEv.label + ' (' + r + ')'); },
+
+      sv: { erfassen: st.strafView === 'erfassen', uebersicht: st.strafView === 'uebersicht' },
+      segE: st.strafView === 'erfassen' ? segOn : segOff, segU: st.strafView === 'uebersicht' ? segOn : segOff,
+      showErfassen: () => set({ strafView: 'erfassen' }), showUebersicht: () => set({ strafView: 'uebersicht' }),
+      finesLocked: !can('fines'), finesOpen: can('fines'),
+      selLabel: selCount ? selCount + ' ausgewählt – jetzt Strafe antippen' : 'Mitglied antippen (mehrere möglich)',
+      grid: grid, rulesActive: rulesActive, recent: recent, sums: sums, onlyMine: !can('seeAllFines'),
+      totalOpen: fmt(totalOpen), totalPaid: fmt(totalPaid), myOpen: fmt(myOpen),
+      undo: () => { set({ fines: this.state.fines.filter(f => this.state.lastBatch.indexOf(f.id) < 0), lastBatch: [], toast: '', toastUndo: false }); },
+      openFree: () => { if (!this.state.sel.length) { this.showToast('Erst ein Mitglied antippen'); return; } set({ free: { name: '', amount: '' } }); },
+      showFree: !!fr, free: fr || { name: '', amount: '' }, closeFree: () => set({ free: null }),
+      freeFor: st.sel.map(id => byId[id].name).join(', '),
+      freeName: this.field('free', 'name'), freeAmount: this.field('free', 'amount'),
+      freeDisabled: !(fr && fr.name.trim() && freeA > 0),
+      saveFree: () => { if (!(fr && fr.name.trim() && freeA > 0)) return; this.bookFines(fr.name.trim(), freeA, 'free'); },
+
+      openParty: () => set({ overlay: 'party' }), openWheel: () => set({ overlay: 'wheel' }),
+      party: { no: p.idx + 1, kind: c.k, text: ptext, alcFree: p.alcFree, track: p.alcFree ? '#14161B' : 'rgba(0,0,0,.22)', knob: p.alcFree ? '23px' : '3px' },
+      nextCard: () => set({ party: Object.assign({}, this.state.party, { idx: this.state.party.idx + 1 }) }),
+      toggleAlc: () => set({ party: Object.assign({}, this.state.party, { alcFree: !this.state.party.alcFree }) }),
+      wheelName: st.wheel, spin: () => { if (!plN) return; set({ wheel: pl[Math.floor(Math.random() * plN)].name }); },
+      playerChips: playerChips, gamesDisabled: plN < 2,
+      playersLabel: plN < 2 ? 'Mindestens zwei Mitspieler auswählen.' : plN + ' spielen mit' + (st.guests.length ? ', davon ' + st.guests.length + (st.guests.length === 1 ? ' Gast' : ' Gäste') : '') + '.',
+      playersAll: () => set({ players: MEMBERS.map(m => m.id) }), playersNone: () => set({ players: [], guests: [] }),
+      guestName: st.guestName, onGuestName: (e) => { var v = e.target.value; this.setState({ guestName: v }); },
+      guestDisabled: !st.guestName.trim(),
+      addGuest: () => { var n = this.state.guestName.trim(); if (!n) return; set({ guests: this.state.guests.filter(x => x !== n).concat([n]), guestName: '' }); },
+      soon: [
+        { name: 'Wer würde eher …?', desc: 'Alle zeigen gleichzeitig auf jemanden' },
+        { name: 'Ich hab noch nie …', desc: 'Aussagen, wer es doch getan hat, reagiert' },
+        { name: 'Mäxchen', desc: 'Digitale Würfel mit Bluffen' },
+        { name: 'Schätzfragen', desc: 'Wer am weitesten daneben liegt, verliert' }
+      ],
+
+      groupName: 'Kegelfahrt Mai 2027', ruleGroups: ruleGroups, officers: officers,
+      kasseList: kasseList,
+      kasseHint: can('seeAllFines') ? 'Tippe auf ein Mitglied, um die offenen Strafen nach Kegelabend zu sehen.' : 'Du siehst nur deine eigenen Strafen. Der Admin hat „Strafen aller sehen“ ausgeschaltet.',
+      openKasse: () => set({ overlay: 'kasse', kasseOpen: null, kasseView: 'strafen' }),
+      openKasseMe: () => set({ overlay: 'kasse', kasseOpen: this.state.me, kasseView: 'strafen' }),
+      openKonto: () => set({ overlay: 'kasse', kasseView: 'konto' }),
+      showKonto: can('seeKonto'), konto: konto, canKasse: canKasse, gastroList: gastroList, beitragList: beitragList,
+      kv: { konto: kvKonto, strafen: !kvKonto }, kvK: kvKonto ? segOn : segOff, kvS: kvKonto ? segOff : segOn,
+      showKontoView: () => set({ kasseView: 'konto' }), showStrafenView: () => set({ kasseView: 'strafen' }),
+      addGastro: () => { if (this.state.gastro.some(g => g.date === 'heute')) { this.showToast('Für heute ist schon ein Eintrag da'); return; }
+        set({ gastro: this.state.gastro.concat([{ id: 'g' + Date.now(), date: 'heute', amount: '' }]) }); },
+      openBeitraege: () => set(this.state.admin ? { overlay: 'beitraege', beitragFrom: 'kasse' } : { overlay: 'pin', pin: '', pinErr: false, pinTarget: 'beitraege', beitragFrom: 'kasse' }),
+      openBeitraegeAdmin: () => set({ overlay: 'beitraege', beitragFrom: 'admin' }),
+      beitragBtn: st.admin ? 'Beiträge anpassen' : 'Beiträge anpassen (Admin-PIN)',
+      backFromBeitraege: () => set({ overlay: this.state.beitragFrom === 'admin' ? 'admin' : 'kasse', kasseView: 'konto' }),
+      beitragStd: st.beitragStd, onBeitragStd: (e) => { var v = e.target.value; this.setState({ beitragStd: v }); },
+      showAbgleich: abV !== null, abgleichVal: abV || '', abgleichDiff: abDiff, abgleichDisabled: abNum === null,
+      openAbgleich: () => set({ abgleich: '' }), closeAbgleich: () => set({ abgleich: null }),
+      onAbgleich: (e) => { var v = e.target.value; this.setState({ abgleich: v }); },
+      saveAbgleich: () => { if (abNum === null) return;
+        set({ anchor: { date: '10.10.2026', key: '1010', amount: abNum, months: 0 }, abgleich: null,
+          fines: this.state.fines.map(f => f.paid ? Object.assign({}, f, { paidOn: 'alt' }) : f),
+          gastro: this.state.gastro.map(g => g.date === 'heute' ? Object.assign({}, g, { date: '10.10.' }) : g) });
+        this.showToast('Kontostand auf ' + fmt(abNum) + ' abgeglichen'); }, expTotal: fmt(total), myBalLabel: myBalLabel, myBalColor: myBalColor, rate: RATE,
+      transfers: transfers, allSettled: transfers.length === 0, balances: balances, expList: expList,
+      trCompare: rawCount + ' → ' + transfers.length + ' Zahlungen',
+      canAddExp: can('expenses'), groupSize: GROUP.length,
+      openAddExp: () => set({ expForm: { desc: '', amount: '', cur: 'EUR', payer: this.state.me, among: GROUP.slice() } }),
+      splitChips: splitChips, splitLabel: splitLabel, splitCount: nSplit + ' von ' + GROUP.length,
+      splitAll: () => set({ expForm: Object.assign({}, this.state.expForm, { among: GROUP.slice() }) }),
+      splitNone: () => set({ expForm: Object.assign({}, this.state.expForm, { among: [] }) }),
+      showAddExp: !!st.expForm, ef: ef, closeAddExp: () => set({ expForm: null }),
+      efDesc: this.field('expForm', 'desc'), efAmount: this.field('expForm', 'amount'),
+      curChips: curChips, payerChips: payerChips, efPreview: efPreview, efDisabled: !efOk,
+      saveExp: () => { if (!efOk) return;
+        set({ exp: this.state.exp.concat([{ id: 'x' + Date.now(), desc: ef.desc.trim(), amount: efA, cur: ef.cur, payer: ef.payer, among: ef.among.slice() }]), expForm: null });
+        this.showToast('Ausgabe gespeichert'); },
+
+      o: o, openVerein: () => set({ overlay: 'verein' }), closeOverlay: () => set({ overlay: null }),
+      switchProfile: () => set({ overlay: null, screen: 'profile', sel: [] }),
+      logout: () => set({ overlay: null, screen: 'welcome', admin: false }),
+      openAdminOrPin: () => set({ overlay: this.state.admin ? 'admin' : 'pin', pin: '', pinErr: false }),
+      adminHint: st.admin ? 'aktiv' : 'PIN nötig',
+      memberRules: !st.admin && !!st.rights.editRules,
+      backToVerein: () => set({ overlay: this.state.pinTarget ? 'kasse' : 'verein', pin: '', pinTarget: null }), backToAdmin: () => set({ overlay: 'admin' }),
+      backFromRules: () => set({ overlay: this.state.admin ? 'admin' : 'verein' }),
+      pinDots: pinDots, keys: keys,
+      mpinDots: mpinDots, mkeys: mkeys, mp: mp, mpBack: () => set({ screen: 'profile', mpin: null }),
+      mpForgot: () => this.showToast('Sag dem Admin Bescheid – er setzt deine PIN unter Verwaltung › Mitglieder-PINs zurück.'),
+      pinList: pinList, pinSetLabel: pinSetN + ' von ' + MEMBERS.length + ' festgelegt', openPins: () => set({ overlay: 'pins' }),
+      pinMsg: st.pinErr ? 'Falsche PIN – bitte erneut versuchen' : (st.adminPin === '1234' ? 'Demo-PIN: 1234' : 'PIN aus der Registrierung'),
+      pinMsgColor: st.pinErr ? '#F6AFA5' : '#A3A8B2',
+      endAdmin: () => { set({ admin: false, overlay: 'verein' }); this.showToast('Admin-Modus beendet'); },
+      openRights: () => set({ overlay: 'rights' }), openRules: () => set({ overlay: 'rules' }), openCatalog: () => set({ overlay: 'catalog' }),
+      rightsList: rightsList, rulesAll: rulesAll, rulesCount: rulesActive.length, catalog: catalog, catalogCount: catalog.length, catalogEmpty: catalog.length === 0,
+      newRule: st.newRule, nrName: this.field('newRule', 'name'), nrAmount: this.field('newRule', 'amount'),
+      nrDisabled: !(st.newRule.name.trim() && nrA > 0),
+      addRule: () => { var nr = this.state.newRule; var am = parseAmt(nr.amount); if (!(nr.name.trim() && am > 0)) return;
+        set({ rules: this.state.rules.concat([{ id: 'r' + Date.now(), name: nr.name.trim(), amount: am, cat: 'Eigene', adopted: true, active: true }]), newRule: { name: '', amount: '' } });
+        this.showToast('Regel „' + nr.name.trim() + '“ angelegt'); },
+
+      hasToast: !!st.toast, toast: st.toast, toastUndo: st.toastUndo
+    };
+  }
+}
+mountApp(Component);
+</script>
+</body>
+</html>
