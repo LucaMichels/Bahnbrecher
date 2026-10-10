@@ -80,9 +80,47 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
     <p class="muted" style="margin: 0; font-size: 17px; max-width: 300px;">Strafen, Termine, Spiele und Reisekasse – alles für euren Kegelverein an einem Ort.</p>
   </div>
   <div style="display: flex; flex-direction: column; gap: 12px;">
-    <button class="btn primary" onClick="{{goLogin}}">Anmelden</button>
-    <button class="btn ghost" onClick="{{goRegister}}">Verein registrieren</button>
+    <button class="btn primary" onClick="{{goOtp}}">Anmelden</button>
+    <button class="btn ghost" onClick="{{goLogin}}">Demo ansehen</button>
   </div>
+</div>
+</sc-if>
+
+<!-- ============ LOGIN PER E-MAIL-CODE ============ -->
+<sc-if value="{{scr.otp}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(54px + var(--st)) 20px 40px; gap: 24px;">
+  <button class="iconbtn" aria-label="Zurück" onClick="{{otpBack}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <h1 class="h" style="font-size: 32px;">Anmelden</h1>
+    <p class="muted" style="margin: 0;">{{otpInfo}}</p>
+  </div>
+  <sc-if value="{{otpStepEmail}}" hint-placeholder-val="{{true}}">
+    <label class="lbl">Deine E-Mail-Adresse<input class="inp" type="email" autocomplete="email" value="{{otp.email}}" onChange="{{otpEmail}}" placeholder="name@beispiel.de"></label>
+  </sc-if>
+  <sc-if value="{{otpStepCode}}" hint-placeholder-val="{{false}}">
+    <label class="lbl">Code aus der E-Mail<input class="inp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" value="{{otp.code}}" onChange="{{otpCode}}" placeholder="123456"></label>
+    <button class="textbtn" style="align-self: flex-start;" onClick="{{otpResend}}">Keinen Code bekommen? Neu senden</button>
+  </sc-if>
+  <div style="flex: 1;"></div>
+  <button class="btn primary" disabled="{{otpDisabled}}" onClick="{{otpGo}}">{{otpBtn}}</button>
+</div>
+</sc-if>
+
+<!-- ============ LADEN ============ -->
+<sc-if value="{{scr.loading}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+  <p class="eyebrow">{{clubName}}</p>
+  <p class="muted" style="margin: 0;">Daten werden geladen …</p>
+</div>
+</sc-if>
+
+<!-- ============ KEIN VEREIN ============ -->
+<sc-if value="{{scr.noclub}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(110px + var(--st)) 28px 48px; gap: 18px;">
+  <h1 class="h" style="font-size: 30px;">Noch kein Verein</h1>
+  <p class="muted" style="margin: 0;">Du bist als {{liveEmail}} angemeldet, aber noch keinem Verein zugeordnet. Öffne den persönlichen Einladungslink, den du von deinem Verein bekommen hast.</p>
+  <div style="flex: 1;"></div>
+  <button class="btn ghost" onClick="{{logout}}">Abmelden</button>
 </div>
 </sc-if>
 
@@ -1134,6 +1172,8 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
 <script src="vendor/react.production.min.js"></script>
 <script src="vendor/react-dom.production.min.js"></script>
 <script src="runtime.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="backend.js"></script>
 <script>
 var RATE = 25;
 var MEMBERS = [
@@ -1280,6 +1320,7 @@ function genDates(f) {
   return out;
 }
 function mkDeadline(d, time, h) { if (!h) return 'Keine Abmeldefrist'; return 'Abmeldung bis ' + dLabel(addDays(d, -h / 24)) + ', ' + time + ' Uhr (' + h + ' h vorher)'; }
+function uid() { return crypto.randomUUID(); }
 function parseAmt(s) { var v = parseFloat(String(s || '').replace(',', '.')); return isNaN(v) ? 0 : v; }
 // Zufällige Kartenreihenfolge, ohne Kegelbahn nur Karten ohne bahn-Markierung; 'avoid' verhindert, dass dieselbe Karte direkt zweimal kommt
 function shuffleCards(bahn, avoid) {
@@ -1373,9 +1414,26 @@ class Component extends DCLogic {
         { id: 'x3', desc: 'Abend im Bierlokal', amount: 8250, cur: 'CZK', payer: 'm1', among: GROUP.slice() },
         { id: 'x4', desc: 'Taxi zum Hotel', amount: 900, cur: 'CZK', payer: 'm4', among: ['m1', 'm4', 'm9'] }
       ],
-      expForm: null, settled: {}
+      expForm: null, settled: {},
+      live: false, otp: { step: 'email', email: '', code: '', busy: false }, liveEmail: ''
     };
   }
+  // Mit Login: Daten kommen aus der Datenbank, sonst Demo mit Speicherung auf dem Gerät
+  componentDidMount() {
+    if (window.Backend && Backend.hasSession()) {
+      this.setState({ screen: 'loading' });
+      Backend.start(this).catch(e => { this.setState({ screen: 'welcome' }); this.showToast('Anmeldung fehlgeschlagen: ' + e.message); });
+    } else {
+      super.componentDidMount();
+      if (window.Backend && Backend.pendingInvite()) { this.setState({ screen: 'welcome' }); this.showToast('Einladung erkannt – melde dich mit deiner E-Mail an'); }
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.live) { if (!this._remote) Backend.sync(prevState, this.state); this._remote = false; return; }
+    super.componentDidUpdate();
+  }
+  // Daten vom Server übernehmen, ohne sie gleich wieder zurückzuschreiben
+  remote(patch) { this._remote = true; this.setState(patch); }
   componentWillUnmount() { clearTimeout(this._t); }
   showToast(msg, undo) {
     clearTimeout(this._t);
@@ -1398,7 +1456,7 @@ class Component extends DCLogic {
     var ts = Date.now();
     var names = st.sel.map(id => MEMBERS.find(m => m.id === id).name).join(', ');
     var payers = others ? MEMBERS.map(m => m.id).filter(id => st.sel.indexOf(id) < 0) : st.sel;
-    var nf = payers.map((mid, i) => ({ id: 'f' + ts + '_' + i, mid: mid, rid: rid, name: others ? name + ' von ' + names : name, amount: amount, round: !!round, date: 'heute', paid: false }));
+    var nf = payers.map((mid, i) => ({ id: uid(), mid: mid, rid: rid, name: others ? name + ' von ' + names : name, amount: amount, round: !!round, date: 'heute', paid: false }));
     this.setState({ fines: st.fines.concat(nf), sel: [], lastBatch: nf.map(f => f.id), free: null });
     var msg = round ? names + ' gibt eine Runde aus' : others ? name + ' von ' + names + ' · ' + nf.length + ' andere zahlen je ' + fmt(amount) : name + ' · ' + names + ' · ' + fmt(amount * nf.length);
     this.showToast(msg, true);
@@ -1417,7 +1475,7 @@ class Component extends DCLogic {
     var byId = {}; mem.forEach(m => { byId[m.id] = m; });
     var me = byId[st.me];
 
-    var scr = { welcome: st.screen === 'welcome', login: st.screen === 'login', register: st.screen === 'register', profile: st.screen === 'profile', app: st.screen === 'app', mpin: st.screen === 'mpin' && !!st.mpin };
+    var scr = { welcome: st.screen === 'welcome', login: st.screen === 'login', register: st.screen === 'register', profile: st.screen === 'profile', app: st.screen === 'app', mpin: st.screen === 'mpin' && !!st.mpin, otp: st.screen === 'otp', loading: st.screen === 'loading', noclub: st.screen === 'noclub' };
     var keysT = ['start', 'strafen', 'termine', 'spiele', 'ausgaben'];
     var t = {}, tc = {}, goTab = {};
     keysT.forEach(k => { t[k] = st.tab === k; tc[k] = st.tab === k ? '#E8A33D' : '#A3A8B2'; goTab[k] = () => set({ tab: k, overlay: null }); });
@@ -1729,6 +1787,19 @@ class Component extends DCLogic {
     return {
       yes: true, scr: scr, t: t, tc: tc, goTab: goTab, title: titles[st.tab], admin: st.admin, me: me, mem: mem, clubName: st.clubName,
       memberCount: mem.length,
+      goOtp: () => set({ screen: 'otp', otp: { step: 'email', email: this.state.otp.email, code: '', busy: false } }),
+      otpBack: () => set(this.state.otp.step === 'code' ? { otp: Object.assign({}, this.state.otp, { step: 'email', code: '' }) } : { screen: 'welcome' }),
+      otp: st.otp, otpEmail: this.field('otp', 'email'), otpCode: this.field('otp', 'code'),
+      otpStepEmail: st.otp.step === 'email', otpStepCode: st.otp.step === 'code',
+      otpInfo: st.otp.step === 'email' ? 'Gib deine E-Mail-Adresse ein. Du bekommst eine Mail, mit der du dich anmeldest – ganz ohne Passwort.' : 'Mail an ' + st.otp.email.trim() + ' ist unterwegs. Tippe auf den Link darin – oder gib hier den Code ein, falls einer drinsteht.',
+      otpBtn: st.otp.busy ? 'Einen Moment …' : st.otp.step === 'email' ? 'Mail senden' : 'Anmelden',
+      otpDisabled: st.otp.busy || (st.otp.step === 'email' ? !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(st.otp.email.trim()) : st.otp.code.trim().length < 6),
+      otpGo: () => { var o = this.state.otp, busy = (b, extra) => set({ otp: Object.assign({}, this.state.otp, { busy: b }, extra || {}) });
+        busy(true);
+        if (o.step === 'email') Backend.sendCode(o.email.trim()).then(() => busy(false, { step: 'code', code: '' }), e => { busy(false); this.showToast(e.message); });
+        else Backend.verifyCode(o.email.trim(), o.code.trim()).then(() => { busy(false); set({ screen: 'loading' }); return Backend.start(this); }, e => { busy(false); this.showToast('Code ungültig oder abgelaufen'); }); },
+      otpResend: () => Backend.sendCode(this.state.otp.email.trim()).then(() => this.showToast('Neuer Code gesendet'), e => this.showToast(e.message)),
+      liveEmail: st.liveEmail,
       goLogin: () => set({ screen: 'login' }), goRegister: () => set({ screen: 'register' }), goWelcome: () => set({ screen: 'welcome' }),
       login: st.login, onLoginEmail: this.field('login', 'email'), onLoginPw: this.field('login', 'pw'),
       doLogin: () => set({ screen: 'profile' }), forgot: () => this.showToast('Link zum Zurücksetzen an die Vereins-E-Mail gesendet'),
@@ -1744,9 +1815,9 @@ class Component extends DCLogic {
       efTitle: this.field('evForm', 'title'), efPlace: this.field('evForm', 'place'), efDate: this.field('evForm', 'date'), efTime: this.field('evForm', 'time'), efUntil: this.field('evForm', 'until'),
       ivMinus: () => upd({ interval: Math.max(1, this.state.evForm.interval - 1) }), ivPlus: () => upd({ interval: Math.min(52, this.state.evForm.interval + 1) }),
       cntMinus: () => upd({ count: Math.max(2, this.state.evForm.count - 1) }), cntPlus: () => upd({ count: Math.min(52, this.state.evForm.count + 1) }),
-      saveEv: () => { if (!evOk) return; var f = this.state.evForm, ts = Date.now(), sid = f.freq === 'once' ? null : 'r' + ts;
-        var nev = evGen.filter(x => !x.dup).map((x, i) => ({ id: 'e' + ts + '_' + i, iso: toISO(x.d), wd: WD[x.d.getUTCDay()], day: pad(x.d.getUTCDate()), label: dLabel(x.d), time: f.time,
-          title: f.title.trim(), place: f.place.trim(), deadline: mkDeadline(x.d, f.time, parseInt(f.frist, 10) || 0), rsvp: {}, att: {}, series: sid }));
+      saveEv: () => { if (!evOk) return; var f = this.state.evForm, ts = Date.now(), sid = f.freq === 'once' ? null : uid();
+        var nev = evGen.filter(x => !x.dup).map((x, i) => ({ id: uid(), iso: toISO(x.d), wd: WD[x.d.getUTCDay()], day: pad(x.d.getUTCDate()), label: dLabel(x.d), time: f.time,
+          title: f.title.trim(), place: f.place.trim(), deadline: mkDeadline(x.d, f.time, parseInt(f.frist, 10) || 0), frist: parseInt(f.frist, 10) || 0, rsvp: {}, att: {}, series: sid }));
         var all = this.state.events.concat(nev).sort((a, b) => (a.iso + a.time).localeCompare(b.iso + b.time));
         var fromAdmin = this.state.evFrom === 'admin';
         set({ events: all, evForm: null, overlay: fromAdmin ? 'admin' : null });
@@ -1835,7 +1906,8 @@ class Component extends DCLogic {
 
       o: o, openVerein: () => set({ overlay: 'verein' }), closeOverlay: () => set({ overlay: null }),
       switchProfile: () => set({ overlay: null, screen: 'profile', sel: [] }),
-      logout: () => set({ overlay: null, screen: 'welcome', admin: false }),
+      logout: () => { if (this.state.live || this.state.screen === 'noclub') { Backend.signOut().finally(() => { try { localStorage.removeItem('bahnbrecher-v1'); } catch (e) {} location.reload(); }); return; }
+        set({ overlay: null, screen: 'welcome', admin: false }); },
       openAdminOrPin: () => set({ overlay: this.state.admin ? 'admin' : 'pin', pin: '', pinErr: false }),
       adminHint: st.admin ? 'aktiv' : 'PIN nötig',
       memberRules: !st.admin && !!st.rights.editRules,
@@ -1853,7 +1925,7 @@ class Component extends DCLogic {
       newRule: st.newRule, nrName: this.field('newRule', 'name'), nrAmount: this.field('newRule', 'amount'),
       nrDisabled: !(st.newRule.name.trim() && nrA > 0),
       addRule: () => { var nr = this.state.newRule; var am = parseAmt(nr.amount); if (!(nr.name.trim() && am > 0)) return;
-        set({ rules: this.state.rules.concat([{ id: 'r' + Date.now(), name: nr.name.trim(), amount: am, cat: 'Eigene', adopted: true, active: true }]), newRule: { name: '', amount: '' } });
+        set({ rules: this.state.rules.concat([{ id: uid(), name: nr.name.trim(), amount: am, cat: 'Eigene', adopted: true, active: true }]), newRule: { name: '', amount: '' } });
         this.showToast('Regel „' + nr.name.trim() + '“ angelegt'); },
 
       hasToast: !!st.toast, toast: st.toast, toastUndo: st.toastUndo
