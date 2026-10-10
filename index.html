@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap">
 <style>
-html,body{margin:0;height:100%;background:#14161B;overscroll-behavior:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#14161B;overscroll-behavior:none}
 /* iPhone: App füllt den ganzen Bildschirm; --st = zusätzlicher Abstand oben, wenn die Statusleiste höher als 42 px ist (Dynamic Island) */
 :root{--st:max(0px,calc(env(safe-area-inset-top) - 42px));--sb:env(safe-area-inset-bottom)}
 #app{position:fixed;inset:0}
@@ -1860,6 +1860,15 @@ class Component extends DCLogic {
   }
 }
 mountApp(Component);
+// iPhone: Nach dem Schließen der Tastatur bleibt die Seite sonst verschoben,
+// dann passen die Tippflächen nicht mehr zum Bild – Seite wieder nach oben setzen.
+(function () {
+  var typing = () => /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '');
+  var reset = () => { if (!typing() && (window.scrollY || document.documentElement.scrollTop || document.body.scrollTop)) window.scrollTo(0, 0); };
+  document.addEventListener('focusout', () => setTimeout(reset, 60));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => setTimeout(reset, 60));
+  window.addEventListener('scroll', reset);
+})();
 </script>
 </body>
 </html>
