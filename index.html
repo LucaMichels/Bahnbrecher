@@ -144,7 +144,7 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
 <sc-if value="{{scr.profile}}" hint-placeholder-val="{{false}}">
 <div class="scroller" style="overflow-y: auto; position: absolute; inset: 0; display: flex; flex-direction: column; padding: calc(86px + var(--st)) 20px 40px; gap: 24px;">
   <div style="display: flex; flex-direction: column; gap: 8px;">
-    <p class="eyebrow">{{clubName}}</p>
+    <p class="eyebrow">{{clubLabel}}</p>
     <h1 class="h" style="font-size: 32px;">Wer bist du?</h1>
     <p class="muted" style="margin: 0;">Wähle dein Profil und bestätige mit deiner PIN. Beim ersten Mal legst du sie fest.</p>
   </div>
@@ -200,7 +200,7 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
   <!-- Kopfzeile -->
   <div style="position: absolute; top: 0; left: 0; right: 0; padding: calc(54px + var(--st)) 20px 12px; display: flex; align-items: flex-end; gap: 12px; background: #14161B; z-index: 5;">
     <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
-      <p class="eyebrow">{{clubName}}</p>
+      <p class="eyebrow">{{clubLabel}}</p>
       <h1 class="h" style="font-size: 30px;">{{title}}</h1>
     </div>
     <sc-if value="{{admin}}" hint-placeholder-val="{{false}}">
@@ -1156,9 +1156,9 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
 </template>
 <script src="vendor/react.production.min.js"></script>
 <script src="vendor/react-dom.production.min.js"></script>
-<script src="runtime.js?v=2026101002"></script>
+<script src="runtime.js?v=2026101003"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-<script src="backend.js?v=2026101002"></script>
+<script src="backend.js?v=2026101003"></script>
 <script>
 var RATE = 25;
 var MEMBERS = [
@@ -1410,6 +1410,7 @@ class Component extends DCLogic {
       Backend.start(this).catch(e => { this.setState({ screen: 'welcome' }); this.showToast('Anmeldung fehlgeschlagen: ' + e.message); });
     } else {
       super.componentDidMount();
+      this.setState({ screen: 'welcome' });
     }
   }
   componentDidUpdate(prevProps, prevState) {
@@ -1787,7 +1788,7 @@ class Component extends DCLogic {
     return {
       yes: true, scr: scr, t: t, tc: tc, goTab: goTab, title: titles[st.tab], admin: st.admin, me: me, mem: mem, clubName: st.clubName,
       memberCount: mem.length,
-      liveEmail: st.liveEmail,
+      liveEmail: st.liveEmail, clubLabel: st.live ? st.clubName : st.clubName + ' · Demo',
       goLogin: () => set({ screen: 'login', loginDemo: false, login: { email: '', pw: '' } }),
       goDemo: () => set({ screen: 'login', loginDemo: true, login: { email: 'bahnbrecher@beispiel.de', pw: 'kegeln2026' } }),
       loginInfo: st.loginDemo ? 'Demo mit Testdaten, nur auf diesem Gerät gespeichert. Danach wählst du ein Profil und gibst die PIN ein.'
