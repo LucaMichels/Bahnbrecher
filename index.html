@@ -15,10 +15,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&amp;family=DM+Sans:wght@400;500;700&amp;display=swap">
 <style>
-html,body{margin:0;height:100%;overflow:hidden;background:#14161B;overscroll-behavior:none}
+html{height:100%;overflow:hidden;background:#14161B;overscroll-behavior:none}
+body{margin:0;background:#14161B;overscroll-behavior:none}
 /* iPhone: App füllt den ganzen Bildschirm; --st = zusätzlicher Abstand oben, wenn die Statusleiste höher als 42 px ist (Dynamic Island) */
 :root{--st:max(0px,calc(env(safe-area-inset-top) - 42px));--sb:env(safe-area-inset-bottom)}
-#app{position:fixed;inset:0}
+#app{height:100vh;height:100dvh} /* kein position:fixed – iOS verschiebt dort die Tippflächen */
 *{box-sizing:border-box}
 .btn{appearance:none;border:0;border-radius:14px;min-height:52px;padding:0 20px;font:700 16px 'DM Sans',system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .primary{background:#E8A33D;color:#1A1408}
