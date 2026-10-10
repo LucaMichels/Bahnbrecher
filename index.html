@@ -237,6 +237,10 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
     <!-- START -->
     <sc-if value="{{t.start}}" hint-placeholder-val="{{true}}">
       <p style="margin: 0; font-size: 17px;">Hallo {{me.name}}, schön dass du da bist.</p>
+      <sc-if value="{{noNext}}" hint-placeholder-val="{{false}}">
+      <div class="card"><p class="eyebrow">Nächster Termin</p><p class="muted" style="margin: 0;">Noch kein Termin angelegt.</p></div>
+      </sc-if>
+      <sc-if value="{{next}}" hint-placeholder-val="{{true}}">
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <p class="eyebrow">Nächster Termin</p>
@@ -262,6 +266,7 @@ body{margin:0;background:#14161B;overscroll-behavior:none}
           <button class="btn soft sm" onClick="{{next.yes}}">Doch zusagen</button>
         </sc-if>
       </div>
+      </sc-if>
       <sc-if value="{{showKonto}}" hint-placeholder-val="{{true}}">
         <button class="libtn card" style="flex-direction: row; align-items: center;" onClick="{{openKonto}}">
           <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
@@ -1499,7 +1504,7 @@ class Component extends DCLogic {
     var next = evs[0];
 
     var seeR = can('seeReasons');
-    var oe = evs.find(e => e.id === st.openEvent) || evs[0];
+    var oe = evs.find(e => e.id === st.openEvent) || evs[0] || { id: null, label: '', title: '', rsvp: {}, att: {} }; // auch ohne Termine
     var yesL = [], noL = [], openL = [];
     mem.forEach(m => {
       var x = oe.rsvp[m.id] || { s: 'open' };
@@ -1806,7 +1811,7 @@ class Component extends DCLogic {
       reg: st.reg, regName: this.field('reg', 'name'), regOrt: this.field('reg', 'ort'), regEmail: this.field('reg', 'email'), regPw: this.field('reg', 'pw'), regPin: this.field('reg', 'pin'),
       regDisabled: !regOk, doRegister: () => { if (!regOk) return; set({ clubName: st.reg.name.trim(), adminPin: st.reg.pin, screen: 'profile' }); },
 
-      next: next, evs: evs, evd: evd, showEvent: !!st.openEvent, closeEvent: () => set({ openEvent: null }),
+      next: next, noNext: !next, evs: evs, evd: evd, showEvent: !!st.openEvent && evs.some(e => e.id === st.openEvent), closeEvent: () => set({ openEvent: null }),
       newEvent: () => set(evDefault('termine')), openEvAdmin: () => set(evDefault('admin')),
       closeEvForm: () => set({ evForm: null, overlay: this.state.evFrom === 'admin' ? 'admin' : null }),
       evf: ef2 || { title: '', place: '', date: '', time: '', until: '' }, evx: evx, titleChips: titleChips, freqChips: freqChips, monthChips: monthChips, endChips: endChips, fristChips: fristChips,

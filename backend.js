@@ -75,7 +75,7 @@
       q('rsvp_status'), q('rsvps'), q('attendance'), sb.from('clubs').select('*').eq('id', club.id).single()
     ]);
     var bad = res.find(function (r) { return r.error; });
-    if (bad) { c.showToast('Laden fehlgeschlagen: ' + bad.error.message); return; }
+    if (bad) { if (first) c.remote({ screen: 'welcome', live: false }); c.showToast('Laden fehlgeschlagen: ' + bad.error.message); return; }
     var members = res[0].data, rules = res[1].data, fines = res[2].data, events = res[3].data;
     var status = res[4].data, reasons = res[5].data, att = res[6].data;
     club = res[7].data;
